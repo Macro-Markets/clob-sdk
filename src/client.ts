@@ -273,6 +273,34 @@ export class ClobClient {
     }
 
     public async getOrderBook(tokenID: string): Promise<OrderBookSummary> {
+        if (this.isPrevisionsCompatHost()) {
+            const result = await this.get(`${this.host}/api/v1/clob/book`, {
+                params: { outcome_id: tokenID },
+            });
+
+            const mapped: OrderBookSummary = {
+                market: tokenID,
+                asset_id: tokenID,
+                timestamp: new Date().toISOString(),
+                bids: (result.bids || []).map((it: any) => ({
+                    price: String(it.price),
+                    size: String(it.sizes ?? it.size ?? 0),
+                })),
+                asks: (result.asks || []).map((it: any) => ({
+                    price: String(it.price),
+                    size: String(it.sizes ?? it.size ?? 0),
+                })),
+                min_order_size: "0",
+                tick_size: "0.01",
+                neg_risk: false,
+                last_trade_price: String(result.last_trade_price ?? "0"),
+                hash: "",
+            };
+
+            this.updateTickSizeFromOrderBook(mapped);
+            return mapped;
+        }
+
         const result: OrderBookSummary = await this.get(`${this.host}${GET_ORDER_BOOK}`, {
             params: { token_id: tokenID },
         });
@@ -379,6 +407,18 @@ export class ClobClient {
     }
 
     public async getPrice(tokenID: string, side: string): Promise<any> {
+        if (this.isPrevisionsCompatHost()) {
+            const result = await this.get(`${this.host}/api/v1/clob/price`, {
+                params: { outcome_id: tokenID, side },
+            });
+
+            return {
+                price: String(result?.price ?? "0"),
+                side,
+                token_id: tokenID,
+            };
+        }
+
         return this.get(`${this.host}${GET_PRICE}`, {
             params: { token_id: tokenID, side: side },
         });
@@ -1474,6 +1514,11 @@ export class ClobClient {
             ...options,
             params: { ...options?.params, geo_block_token: this.geoBlockToken },
         });
+    }
+
+    private isPrevisionsCompatHost(): boolean {
+        const host = this.host.toLowerCase();
+        return host.includes("previsions.ai") || process.env.PREVISIONS_CLOB_COMPAT === "1";
     }
 
     private canL1Auth(): void {
