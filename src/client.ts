@@ -272,15 +272,15 @@ export class ClobClient {
         return this.get(`${this.host}${GET_MARKET}${conditionID}`);
     }
 
-    public async getOrderBook(tokenID: string): Promise<OrderBookSummary> {
+    public async getOrderBook(outcomeId: string): Promise<OrderBookSummary> {
         if (this.isPrevisionsCompatHost()) {
             const result = await this.get(`${this.host}/api/v1/clob/book`, {
-                params: { outcome_id: tokenID },
+                params: { outcome_id: outcomeId },
             });
 
             const mapped: OrderBookSummary = {
-                market: tokenID,
-                asset_id: tokenID,
+                market: outcomeId,
+                asset_id: outcomeId,
                 timestamp: new Date().toISOString(),
                 bids: (result.bids || []).map((it: any) => ({
                     price: String(it.price),
@@ -302,7 +302,7 @@ export class ClobClient {
         }
 
         const result: OrderBookSummary = await this.get(`${this.host}${GET_ORDER_BOOK}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
         this.updateTickSizeFromOrderBook(result);
         return result;
@@ -318,33 +318,33 @@ export class ClobClient {
         return results;
     }
 
-    public async getTickSize(tokenID: string): Promise<TickSize> {
-        const cachedAt = this.tickSizeTimestamps[tokenID];
+    public async getTickSize(outcomeId: string): Promise<TickSize> {
+        const cachedAt = this.tickSizeTimestamps[outcomeId];
 
-        if (tokenID in this.tickSizes && cachedAt && (Date.now() - cachedAt) < this.tickSizeTtlMs) {
-            return this.tickSizes[tokenID];
+        if (outcomeId in this.tickSizes && cachedAt && (Date.now() - cachedAt) < this.tickSizeTtlMs) {
+            return this.tickSizes[outcomeId];
         }
 
         const result = await this.get(`${this.host}${GET_TICK_SIZE}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
         if (result.error) {
             throw new Error(result.error);
         }
-        this.tickSizes[tokenID] = result.minimum_tick_size.toString() as TickSize;
-        this.tickSizeTimestamps[tokenID] = Date.now();
+        this.tickSizes[outcomeId] = result.minimum_tick_size.toString() as TickSize;
+        this.tickSizeTimestamps[outcomeId] = Date.now();
 
-        return this.tickSizes[tokenID];
+        return this.tickSizes[outcomeId];
     }
 
     /**
      * Clears the tick size cache, forcing fresh fetches on the next access.
      * @param tokenID - If provided, only clears the cache for this token. Otherwise clears all.
      */
-    public clearTickSizeCache(tokenID?: string): void {
-        if (tokenID !== undefined) {
-            delete this.tickSizes[tokenID];
-            delete this.tickSizeTimestamps[tokenID];
+    public clearTickSizeCache(outcomeId?: string): void {
+        if (outcomeId !== undefined) {
+            delete this.tickSizes[outcomeId];
+            delete this.tickSizeTimestamps[outcomeId];
         } else {
             for (const key of Object.keys(this.tickSizes)) {
                 delete this.tickSizes[key];
@@ -353,36 +353,36 @@ export class ClobClient {
         }
     }
 
-    public async getNegRisk(tokenID: string): Promise<boolean> {
-        if (tokenID in this.negRisk) {
-            return this.negRisk[tokenID];
+    public async getNegRisk(outcomeId: string): Promise<boolean> {
+        if (outcomeId in this.negRisk) {
+            return this.negRisk[outcomeId];
         }
 
         const result = await this.get(`${this.host}${GET_NEG_RISK}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
         if (result.error) {
             throw new Error(result.error);
         }
-        this.negRisk[tokenID] = result.neg_risk as boolean;
+        this.negRisk[outcomeId] = result.neg_risk as boolean;
 
-        return this.negRisk[tokenID];
+        return this.negRisk[outcomeId];
     }
 
-    public async getFeeRateBps(tokenID: string): Promise<number> {
-        if (tokenID in this.feeRates) {
-            return this.feeRates[tokenID];
+    public async getFeeRateBps(outcomeId: string): Promise<number> {
+        if (outcomeId in this.feeRates) {
+            return this.feeRates[outcomeId];
         }
 
         const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
         if (result.error) {
             throw new Error(result.error);
         }
-        this.feeRates[tokenID] = result.base_fee as number;
+        this.feeRates[outcomeId] = result.base_fee as number;
 
-        return this.feeRates[tokenID];
+        return this.feeRates[outcomeId];
     }
 
     /**
@@ -394,9 +394,9 @@ export class ClobClient {
         return generateOrderBookSummaryHash(orderbook);
     }
 
-    public async getMidpoint(tokenID: string): Promise<any> {
+    public async getMidpoint(outcomeId: string): Promise<any> {
         return this.get(`${this.host}${GET_MIDPOINT}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
     }
 
@@ -406,21 +406,21 @@ export class ClobClient {
         });
     }
 
-    public async getPrice(tokenID: string, side: string): Promise<any> {
+    public async getPrice(outcomeId: string, side: string): Promise<any> {
         if (this.isPrevisionsCompatHost()) {
             const result = await this.get(`${this.host}/api/v1/clob/price`, {
-                params: { outcome_id: tokenID, side },
+                params: { outcome_id: outcomeId, side },
             });
 
             return {
                 price: String(result?.price ?? "0"),
                 side,
-                token_id: tokenID,
+                token_id: outcomeId,
             };
         }
 
         return this.get(`${this.host}${GET_PRICE}`, {
-            params: { token_id: tokenID, side: side },
+            params: { token_id: outcomeId, side: side },
         });
     }
 
@@ -430,9 +430,9 @@ export class ClobClient {
         });
     }
 
-    public async getSpread(tokenID: string): Promise<any> {
+    public async getSpread(outcomeId: string): Promise<any> {
         return this.get(`${this.host}${GET_SPREAD}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
     }
 
@@ -442,9 +442,9 @@ export class ClobClient {
         });
     }
 
-    public async getLastTradePrice(tokenID: string): Promise<any> {
+    public async getLastTradePrice(outcomeId: string): Promise<any> {
         return this.get(`${this.host}${GET_LAST_TRADE_PRICE}`, {
-            params: { token_id: tokenID },
+            params: { token_id: outcomeId },
         });
     }
 
@@ -1547,8 +1547,8 @@ export class ClobClient {
         return (this.builderConfig != undefined && this.builderConfig.isValid())
     }
 
-    private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
-        const marketFeeRateBps = await this.getFeeRateBps(tokenID);
+    private async _resolveFeeRateBps(outcomeId: string, userFeeRateBps?: number): Promise<number> {
+        const marketFeeRateBps = await this.getFeeRateBps(outcomeId);
         if (marketFeeRateBps > 0 && userFeeRateBps != undefined && userFeeRateBps != marketFeeRateBps){
             throw new Error(
                 `invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
