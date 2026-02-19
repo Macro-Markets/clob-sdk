@@ -7,7 +7,8 @@ build:
 .PHONY: test
 test:
 	pnpm nyc -a --reporter=html --reporter=text \
-		ts-mocha \
+		mocha \
+		--node-option import=tsx \
 		--require jsdom-global/register \
 		"tests/**/*.test.ts" \
 		--timeout 300000 \
