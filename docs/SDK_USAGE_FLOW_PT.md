@@ -21,21 +21,30 @@ Documentação atualizada para o modelo **interno** (sem wallet externa de usuá
 ```ts
 import { ClobClient, Chain, Side, OrderType } from "@polymarket/clob-client";
 
-const client = new ClobClient(
-  "https://api.seu-dominio.com",
-  Chain.AMOY,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  undefined,
-  process.env.CLOB_TOKEN, // Bearer token Sanctum
-);
+// Forma simples (somente o necessário no fluxo Sanctum-first)
+const host = "https://api.seu-dominio.com";
+const chain = Chain.AMOY;
+const token = process.env.CLOB_TOKEN!;
+
+// helper local para evitar passar vários parâmetros opcionais
+const createSanctumClient = (host: string, chain: Chain, authToken: string) =>
+  new ClobClient(
+    host,
+    chain,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    authToken,
+  );
+
+const client = createSanctumClient(host, chain, token);
 ```
 
 ---
