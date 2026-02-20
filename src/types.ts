@@ -347,6 +347,41 @@ export interface BalanceAllowanceResponse {
     allowance: string;
 }
 
+export interface WalletBalancesParams {
+    token_ids?: string[];
+    include_zero_balances?: boolean;
+}
+
+export interface WalletBalance {
+    [key: string]: any;
+    token_id?: string;
+    asset_id?: string;
+    balance?: string;
+    available_balance?: string;
+    locked_balance?: string;
+}
+
+export interface WalletBalancesResponse {
+    [key: string]: any;
+    balances: WalletBalance[];
+}
+
+export interface OrderPreviewParams {
+    [key: string]: any;
+    token_id?: string;
+    tokenID?: string;
+    outcome_id?: string;
+    side?: Side;
+    order_type?: OrderType;
+    price?: number;
+    size?: number;
+    amount?: number;
+}
+
+export interface OrderPreviewResponse {
+    [key: string]: any;
+}
+
 export interface OrderScoringParams {
     order_id: string;
 }

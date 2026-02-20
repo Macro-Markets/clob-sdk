@@ -62,6 +62,10 @@ export const DROP_NOTIFICATIONS = "/notifications";
 // Balance
 export const GET_BALANCE_ALLOWANCE = "/balance-allowance";
 export const UPDATE_BALANCE_ALLOWANCE = "/balance-allowance/update";
+export const GET_WALLET_BALANCES = "/api/v1/clob/wallet/balances";
+
+// Orders preview
+export const POST_ORDER_PREVIEW = "/api/v1/clob/orders/preview";
 
 // Live activity
 export const GET_MARKET_TRADES_EVENTS = "/live-activity/events/";

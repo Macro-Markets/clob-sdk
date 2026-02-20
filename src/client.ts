@@ -22,6 +22,10 @@ import type {
     UserOrder,
     BalanceAllowanceParams,
     BalanceAllowanceResponse,
+    WalletBalancesParams,
+    WalletBalancesResponse,
+    OrderPreviewParams,
+    OrderPreviewResponse,
     ApiKeyRaw,
     OrderScoringParams,
     OrderScoring,
@@ -119,6 +123,8 @@ import {
     GET_SPREAD,
     GET_SPREADS,
     UPDATE_BALANCE_ALLOWANCE,
+    GET_WALLET_BALANCES,
+    POST_ORDER_PREVIEW,
     POST_ORDERS,
     GET_FEE_RATE,
     GET_BUILDER_TRADES,
@@ -815,6 +821,37 @@ export class ClobClient {
         return this.get(`${this.host}${endpoint}`, { headers, params: _params });
     }
 
+    public async getWalletBalances(params?: WalletBalancesParams): Promise<WalletBalancesResponse> {
+        this.canL2Auth();
+
+        const endpoint = GET_WALLET_BALANCES;
+        const headerArgs = {
+            method: GET,
+            requestPath: endpoint,
+        };
+
+        const headers = await this.getAuthHeaders(headerArgs);
+
+        return this.get(`${this.host}${endpoint}`, { headers, params });
+    }
+
+    public async previewOrder(params: OrderPreviewParams): Promise<OrderPreviewResponse> {
+        this.canL2Auth();
+
+        const endpoint = POST_ORDER_PREVIEW;
+        const payload = this.mapOrderPreviewParamsToCompat(params);
+
+        const headerArgs = {
+            method: POST,
+            requestPath: endpoint,
+            body: JSON.stringify(payload),
+        };
+
+        const headers = await this.getAuthHeaders(headerArgs);
+
+        return this.post(`${this.host}${endpoint}`, { headers, data: payload });
+    }
+
     public async createOrder(
         userOrder: UserOrder,
         options?: Partial<CreateOrderOptions>,
@@ -1397,6 +1434,21 @@ export class ClobClient {
             ...rest,
             asset_id,
             outcome_id: asset_id,
+        };
+    }
+
+    private mapOrderPreviewParamsToCompat(params?: OrderPreviewParams): any {
+        if (!params) {
+            return params;
+        }
+
+        const { tokenID, token_id, outcome_id, ...rest } = params;
+        const resolvedTokenId = tokenID ?? token_id ?? outcome_id;
+
+        return {
+            ...rest,
+            token_id: resolvedTokenId,
+            outcome_id: resolvedTokenId,
         };
     }
 
