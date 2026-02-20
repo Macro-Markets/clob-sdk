@@ -158,6 +158,8 @@ export class ClobClient {
 
     readonly geoBlockToken?: string;
 
+    readonly authToken?: string;
+
     readonly useServerTime?: boolean;
 
     readonly builderConfig?: BuilderConfig;
@@ -184,6 +186,7 @@ export class ClobClient {
         getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
         retryOnError?: boolean,
         tickSizeTtlMs?: number,
+        authToken?: string,
     ) {
         this.host = host.endsWith("/") ? host.slice(0, -1) : host;
         this.chainId = chainId;
@@ -207,6 +210,7 @@ export class ClobClient {
         this.negRisk = {};
         this.feeRates = {};
         this.geoBlockToken = geoBlockToken;
+        this.authToken = authToken;
         this.useServerTime = useServerTime;
         this.retryOnError = retryOnError;
         if (builderConfig !== undefined) {
@@ -273,53 +277,25 @@ export class ClobClient {
     }
 
     public async getOrderBook(outcomeId: string): Promise<OrderBookSummary> {
-        if (this.isPrevisionsCompatHost()) {
-            const result = await this.get(`${this.host}/api/v1/clob/book`, {
-                params: { outcome_id: outcomeId },
-            });
-
-            const mapped: OrderBookSummary = {
-                market: outcomeId,
-                asset_id: outcomeId,
-                timestamp: new Date().toISOString(),
-                bids: (result.bids || []).map((it: any) => ({
-                    price: String(it.price),
-                    size: String(it.sizes ?? it.size ?? 0),
-                })),
-                asks: (result.asks || []).map((it: any) => ({
-                    price: String(it.price),
-                    size: String(it.sizes ?? it.size ?? 0),
-                })),
-                min_order_size: "0",
-                tick_size: "0.01",
-                neg_risk: false,
-                last_trade_price: String(result.last_trade_price ?? "0"),
-                hash: "",
-            };
-
-            this.updateTickSizeFromOrderBook(mapped);
-            return mapped;
-        }
-
         const result: OrderBookSummary = await this.get(`${this.host}${GET_ORDER_BOOK}`, {
-            params: { token_id: outcomeId },
+            params: {
+                token_id: outcomeId,
+                outcome_id: outcomeId,
+            },
         });
-        this.updateTickSizeFromOrderBook(result);
-        return result;
+        const normalized = this.normalizeOrderBookSummary(result);
+        this.updateTickSizeFromOrderBook(normalized);
+        return normalized;
     }
 
     public async getOrderBooks(params: BookParams[]): Promise<OrderBookSummary[]> {
-        const payload = this.isPrevisionsCompatHost()
-            ? params.map(param => this.mapBookParamToCompat(param))
-            : params;
+        const payload = params.map(param => this.mapBookParamToCompat(param));
 
         const resultsRaw: any[] = await this.post(`${this.host}${GET_ORDER_BOOKS}`, {
             data: payload,
         });
 
-        const results: OrderBookSummary[] = this.isPrevisionsCompatHost()
-            ? resultsRaw.map(book => this.normalizeOrderBookSummary(book))
-            : resultsRaw;
+        const results: OrderBookSummary[] = resultsRaw.map(book => this.normalizeOrderBookSummary(book));
 
         for (const book of results) {
             this.updateTickSizeFromOrderBook(book);
@@ -410,9 +386,7 @@ export class ClobClient {
     }
 
     public async getMidpoints(params: BookParams[]): Promise<any> {
-        const payload = this.isPrevisionsCompatHost()
-            ? params.map(param => this.mapBookParamToCompat(param))
-            : params;
+        const payload = params.map(param => this.mapBookParamToCompat(param));
 
         return this.post(`${this.host}${GET_MIDPOINTS}`, {
             data: payload,
@@ -420,27 +394,13 @@ export class ClobClient {
     }
 
     public async getPrice(outcomeId: string, side: string): Promise<any> {
-        if (this.isPrevisionsCompatHost()) {
-            const result = await this.get(`${this.host}/api/v1/clob/price`, {
-                params: { outcome_id: outcomeId, side },
-            });
-
-            return {
-                price: String(result?.price ?? "0"),
-                side,
-                token_id: outcomeId,
-            };
-        }
-
         return this.get(`${this.host}${GET_PRICE}`, {
-            params: { token_id: outcomeId, side: side },
+            params: { token_id: outcomeId, outcome_id: outcomeId, side: side },
         });
     }
 
     public async getPrices(params: BookParams[]): Promise<any> {
-        const payload = this.isPrevisionsCompatHost()
-            ? params.map(param => this.mapBookParamToCompat(param))
-            : params;
+        const payload = params.map(param => this.mapBookParamToCompat(param));
 
         return this.post(`${this.host}${GET_PRICES}`, {
             data: payload,
@@ -454,9 +414,7 @@ export class ClobClient {
     }
 
     public async getSpreads(params: BookParams[]): Promise<any> {
-        const payload = this.isPrevisionsCompatHost()
-            ? params.map(param => this.mapBookParamToCompat(param))
-            : params;
+        const payload = params.map(param => this.mapBookParamToCompat(param));
 
         return this.post(`${this.host}${GET_SPREADS}`, {
             data: payload,
@@ -470,9 +428,7 @@ export class ClobClient {
     }
 
     public async getLastTradesPrices(params: BookParams[]): Promise<any> {
-        const payload = this.isPrevisionsCompatHost()
-            ? params.map(param => this.mapBookParamToCompat(param))
-            : params;
+        const payload = params.map(param => this.mapBookParamToCompat(param));
 
         return this.post(`${this.host}${GET_LAST_TRADES_PRICES}`, {
             data: payload,
@@ -557,12 +513,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers });
     }
@@ -576,12 +527,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers });
     }
@@ -595,12 +541,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.del(`${this.host}${endpoint}`, { headers });
     }
@@ -618,12 +559,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.post(`${this.host}${endpoint}`, { headers });
     }
@@ -637,12 +573,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers });
     }
@@ -663,12 +594,7 @@ export class ClobClient {
             body: JSON.stringify(payload),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.del(`${this.host}${endpoint}`, { headers, data: payload });
     }
@@ -694,12 +620,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers });
     }
@@ -717,12 +638,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         let results: Trade[] = [];
         next_cursor = next_cursor || INITIAL_CURSOR;
@@ -757,12 +673,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         next_cursor = next_cursor || INITIAL_CURSOR;
 
@@ -839,12 +750,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, {
             headers,
@@ -861,12 +767,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
 
         return this.del(`${this.host}${endpoint}`, {
             headers,
@@ -885,12 +786,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         const _params = {
             ...params,
@@ -909,12 +805,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         const _params = {
             ...params,
@@ -1024,12 +915,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
 
         let results: OpenOrder[] = [];
         next_cursor = next_cursor || INITIAL_CURSOR;
@@ -1068,12 +954,7 @@ export class ClobClient {
             body: JSON.stringify(orderPayload),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
 
         // builders flow
         if (this.canBuilderAuth()) {
@@ -1107,12 +988,7 @@ export class ClobClient {
             body: JSON.stringify(ordersPayload),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
 
         // builders flow
         if (this.canBuilderAuth()) {
@@ -1134,12 +1010,7 @@ export class ClobClient {
             body: JSON.stringify(payload),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
         return this.del(`${this.host}${endpoint}`, { headers, data: payload });
     }
 
@@ -1152,12 +1023,7 @@ export class ClobClient {
             body: JSON.stringify(ordersHashes),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
         return this.del(`${this.host}${endpoint}`, { headers, data: ordersHashes });
     }
 
@@ -1169,12 +1035,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
         return this.del(`${this.host}${endpoint}`, { headers });
     }
 
@@ -1200,12 +1061,7 @@ export class ClobClient {
             body: serialized,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
 
         return this.post(`${this.host}${endpoint}`, { headers, data: serialized });
     }
@@ -1219,12 +1075,7 @@ export class ClobClient {
             body: JSON.stringify(payload),
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            l2HeaderArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(l2HeaderArgs);
         return this.del(`${this.host}${endpoint}`, { headers, data: payload });
     }
 
@@ -1237,12 +1088,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers, params });
     }
@@ -1258,12 +1104,7 @@ export class ClobClient {
             body: payload,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.post(`${this.host}${endpoint}`, {
             headers,
@@ -1281,12 +1122,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         let results: UserEarning[] = [];
         let next_cursor = INITIAL_CURSOR;
@@ -1316,12 +1152,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         const params = {
             date,
@@ -1348,12 +1179,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         let results: UserRewardsEarning[] = [];
         let next_cursor = INITIAL_CURSOR;
@@ -1386,12 +1212,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         const _params = {
             signature_type: this.orderBuilder.signatureType,
@@ -1462,12 +1283,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.post(`${this.host}${endpoint}`, { headers });
     }
@@ -1481,12 +1297,7 @@ export class ClobClient {
             requestPath: endpoint,
         };
 
-        const headers = await createL2Headers(
-            this.signer as Wallet | JsonRpcSigner,
-            this.creds as ApiKeyCreds,
-            headerArgs,
-            this.useServerTime ? await this.getServerTime() : undefined,
-        );
+        const headers = await this.getAuthHeaders(headerArgs);
 
         return this.get(`${this.host}${endpoint}`, { headers });
     }
@@ -1554,60 +1365,42 @@ export class ClobClient {
         });
     }
 
-    private isPrevisionsCompatHost(): boolean {
-        const host = this.host.toLowerCase();
-        return host.includes("previsions.ai") || process.env.PREVISIONS_CLOB_COMPAT === "1";
-    }
-
     private mapBookParamToCompat(param: BookParams): any {
-        if (!this.isPrevisionsCompatHost()) {
-            return param;
-        }
-
         const { token_id, ...rest } = param;
         return {
             ...rest,
+            token_id,
             outcome_id: token_id,
         };
     }
 
     private mapOpenOrderParamsToCompat(params?: OpenOrderParams): any {
-        if (!params || !this.isPrevisionsCompatHost()) {
+        if (!params) {
             return params;
         }
 
         const { asset_id, ...rest } = params;
-        if (asset_id == undefined) {
-            return params;
-        }
-
         return {
             ...rest,
+            asset_id,
             outcome_id: asset_id,
         };
     }
 
     private mapTradeParamsToCompat(params?: TradeParams): any {
-        if (!params || !this.isPrevisionsCompatHost()) {
+        if (!params) {
             return params;
         }
 
         const { asset_id, ...rest } = params;
-        if (asset_id == undefined) {
-            return params;
-        }
-
         return {
             ...rest,
+            asset_id,
             outcome_id: asset_id,
         };
     }
 
     private normalizeOrderBookSummary(book: any): OrderBookSummary {
-        if (!this.isPrevisionsCompatHost()) {
-            return book as OrderBookSummary;
-        }
-
         return {
             ...book,
             asset_id: book.asset_id ?? book.outcome_id ?? book.token_id,
@@ -1615,10 +1408,6 @@ export class ClobClient {
     }
 
     private normalizeOpenOrder(order: any): OpenOrder {
-        if (!this.isPrevisionsCompatHost()) {
-            return order as OpenOrder;
-        }
-
         return {
             ...order,
             asset_id: order.asset_id ?? order.outcome_id,
@@ -1626,10 +1415,6 @@ export class ClobClient {
     }
 
     private normalizeTrade(trade: any): Trade {
-        if (!this.isPrevisionsCompatHost()) {
-            return trade as Trade;
-        }
-
         return {
             ...trade,
             asset_id: trade.asset_id ?? trade.outcome_id,
@@ -1649,13 +1434,32 @@ export class ClobClient {
     }
 
     private canL2Auth(): void {
-        if (this.signer === undefined) {
-            throw L1_AUTH_UNAVAILABLE_ERROR;
+        if (this.authToken) {
+            return;
         }
 
-        if (this.creds === undefined) {
+        if (this.signer === undefined || this.creds === undefined) {
             throw L2_AUTH_NOT_AVAILABLE;
         }
+    }
+
+    private async getAuthHeaders(headerArgs: L2HeaderArgs): Promise<any> {
+        if (this.authToken) {
+            return {
+                Authorization: `Bearer ${this.authToken}`,
+            };
+        }
+
+        if (this.signer === undefined || this.creds === undefined) {
+            throw L2_AUTH_NOT_AVAILABLE;
+        }
+
+        return createL2Headers(
+            this.signer as Wallet | JsonRpcSigner,
+            this.creds as ApiKeyCreds,
+            headerArgs,
+            this.useServerTime ? await this.getServerTime() : undefined,
+        );
     }
 
     private mustBuilderAuth(): void {
