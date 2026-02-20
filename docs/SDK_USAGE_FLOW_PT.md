@@ -52,10 +52,17 @@ const client = createSanctumClient(host, chain, token);
 ## 2) Mercado / book / preço
 
 ```ts
-const market = await client.getMarket("SEU_CONDITION_ID");
-const book = await client.getOrderBook("TOKEN_ID");
-const priceBuy = await client.getPrice("TOKEN_ID", "buy");
-const spread = await client.getSpread("TOKEN_ID");
+// nomenclatura alinhada ao back
+const marketPredictionId = "SEU_MARKET_PREDICTION_ID";
+const outcomeId = "SEU_OUTCOME_ID";
+
+// método legado do SDK (internamente ainda usa nome conditionID)
+const market = await client.getMarket(marketPredictionId);
+
+// leitura por outcome_id
+const book = await client.getOrderBook(outcomeId);
+const priceBuy = await client.getPrice(outcomeId, "buy");
+const spread = await client.getSpread(outcomeId);
 ```
 
 ---
