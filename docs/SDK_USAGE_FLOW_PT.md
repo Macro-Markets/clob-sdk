@@ -1,14 +1,15 @@
-# SDK CLOB — Guia de uso (fluxo completo)
+# CLOB SDK — Guia de uso (Previsions / Sanctum)
 
-Este guia mostra o fluxo prático para usar o SDK:
-- buscar mercados,
-- buscar livro/preço,
-- criar e enviar ordens,
-- consultar ordens abertas,
-- consultar trades,
-- cancelar ordens.
+Guia prático da SDK no fluxo real da API interna (Sanctum-first), sem depender de Polymarket em nível de URL.
 
-> Exemplos em TypeScript.
+## O que você vai ver
+- Inicialização com **Bearer token (Sanctum)**
+- Buscar mercados
+- Buscar book / preço / spreads
+- Criar e enviar ordens
+- Buscar ordens abertas
+- Buscar trades
+- Cancelar ordens
 
 ---
 
@@ -20,31 +21,37 @@ npm i @polymarket/clob-client ethers
 pnpm add @polymarket/clob-client ethers
 ```
 
+> Observação: o pacote ainda mantém nome legado, mas o uso abaixo já está no padrão da API interna.
+
 ---
 
-## 2) Inicialização do cliente
+## 2) Inicialização (Sanctum-first)
 
 ```ts
 import { ClobClient, Chain, Side, OrderType } from "@polymarket/clob-client";
-import { Wallet } from "@ethersproject/wallet";
 
-const host = "https://SEU_HOST_CLOB"; // ex.: endpoint da API CLOB
-const chainId = Chain.AMOY; // ou Chain.POLYGON
+const host = "https://api.seu-dominio.com";
+const chainId = Chain.AMOY;
 
-// carteira que assina (L1)
-const signer = new Wallet(process.env.PRIVATE_KEY as string);
+// Token Sanctum do usuário
+const authToken = process.env.CLOB_TOKEN!;
 
-// funder/profile address (quando necessário no seu fluxo)
-const funderAddress = process.env.FUNDER as string;
-
-// assinatura: 0 = browser wallet, 1 = magic/email
-const signatureType = 1;
-
-// 1) cria/deriva credenciais de API (L2)
-const creds = await new ClobClient(host, chainId, signer).createOrDeriveApiKey();
-
-// 2) cliente final autenticado
-const client = new ClobClient(host, chainId, signer, creds, signatureType, funderAddress);
+// signer/creds podem ficar undefined no fluxo Sanctum-first
+const client = new ClobClient(
+  host,
+  chainId,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  authToken,
+);
 ```
 
 ---
@@ -52,37 +59,32 @@ const client = new ClobClient(host, chainId, signer, creds, signatureType, funde
 ## 3) Buscar mercados
 
 ```ts
-// paginação de mercados
-const marketsPage = await client.getMarkets();
-console.log("markets:", marketsPage);
+const markets = await client.getMarkets();
+console.log(markets);
 
-// buscar um mercado específico pelo conditionID
 const conditionId = "SEU_CONDITION_ID";
 const market = await client.getMarket(conditionId);
-console.log("market:", market);
+console.log(market);
 ```
 
 ---
 
-## 4) Buscar livro, preço e spread
+## 4) Buscar book, preço e spread
 
-> No SDK compatível com PREVISIONS, use `outcomeId` nos métodos de leitura.
+Use `outcomeId` nos métodos de leitura.
 
 ```ts
 const outcomeId = "12345";
 
 const book = await client.getOrderBook(outcomeId);
-console.log("book:", book);
-
-const priceBuy = await client.getPrice(outcomeId, "buy");
-const priceSell = await client.getPrice(outcomeId, "sell");
-console.log({ priceBuy, priceSell });
-
+const buy = await client.getPrice(outcomeId, "buy");
+const sell = await client.getPrice(outcomeId, "sell");
 const spread = await client.getSpread(outcomeId);
-console.log("spread:", spread);
+
+console.log({ book, buy, sell, spread });
 ```
 
-Batch:
+### Batch
 
 ```ts
 const books = await client.getOrderBooks([
@@ -94,32 +96,38 @@ const prices = await client.getPrices([
   { token_id: "12345", side: Side.BUY },
   { token_id: "67890", side: Side.SELL },
 ]);
+
+const spreads = await client.getSpreads([
+  { token_id: "12345", side: Side.BUY },
+  { token_id: "67890", side: Side.SELL },
+]);
+
+console.log({ books, prices, spreads });
 ```
 
 ---
 
-## 5) Criar + enviar ordem limite (trade)
+## 5) Criar e enviar ordem limite
 
 ```ts
-const order = await client.createOrder(
+const signed = await client.createOrder(
   {
-    tokenID: "12345",       // token/outcome do mercado
-    side: Side.BUY,          // Side.BUY | Side.SELL
-    price: 0.52,             // preço
-    size: 100,               // quantidade
+    tokenID: "12345",
+    side: Side.BUY,
+    price: 0.52,
+    size: 100,
   },
   {
     tickSize: "0.01",
     negRisk: false,
-  }
+  },
 );
 
-// envia a ordem ao CLOB
-const posted = await client.postOrder(order, OrderType.GTC);
-console.log("order posted:", posted);
+const posted = await client.postOrder(signed, OrderType.GTC);
+console.log(posted);
 ```
 
-Atalho (cria e posta em uma chamada):
+Atalho:
 
 ```ts
 const postedDirect = await client.createAndPostOrder(
@@ -133,29 +141,29 @@ const postedDirect = await client.createAndPostOrder(
     tickSize: "0.01",
     negRisk: false,
   },
-  OrderType.GTC
+  OrderType.GTC,
 );
 ```
 
 ---
 
-## 6) Ordem de mercado (execução imediata)
+## 6) Ordem de mercado
 
 ```ts
-const marketFill = await client.createAndPostMarketOrder(
+const result = await client.createAndPostMarketOrder(
   {
     tokenID: "12345",
     side: Side.BUY,
-    amount: 250, // BUY: valor; SELL: shares
+    amount: 250,
   },
   {
     tickSize: "0.01",
     negRisk: false,
   },
-  OrderType.FOK // ou FAK
+  OrderType.FOK,
 );
 
-console.log("market order result:", marketFill);
+console.log(result);
 ```
 
 ---
@@ -168,14 +176,14 @@ const openOrders = await client.getOpenOrders({
   asset_id: "12345",          // opcional
 });
 
-console.log("open orders:", openOrders);
+console.log(openOrders);
 ```
 
-Buscar ordem por id/hash:
+Buscar ordem específica:
 
 ```ts
-const orderById = await client.getOrder("ORDER_HASH_OU_ID");
-console.log(orderById);
+const order = await client.getOrder("ORDER_ID_OU_HASH");
+console.log(order);
 ```
 
 ---
@@ -188,7 +196,7 @@ const trades = await client.getTrades({
   asset_id: "12345",          // opcional
 });
 
-console.log("trades:", trades);
+console.log(trades);
 ```
 
 Paginado:
@@ -206,21 +214,11 @@ console.log(tradesPage);
 
 ## 9) Cancelar ordens
 
-Cancelar uma:
-
 ```ts
-await client.cancelOrder({ orderID: "ORDER_HASH_OU_ID" } as any);
-```
+await client.cancelOrder({ orderID: "ORDER_ID_OU_HASH" } as any);
 
-Cancelar várias:
+await client.cancelOrders(["ORDER_1", "ORDER_2"]);
 
-```ts
-await client.cancelOrders(["ORDER_HASH_1", "ORDER_HASH_2"]);
-```
-
-Cancelar todas:
-
-```ts
 await client.cancelAll();
 ```
 
@@ -229,20 +227,20 @@ await client.cancelAll();
 ## 10) Fluxo completo (resumo)
 
 ```ts
-// 1. init client
-// 2. getMarkets / getMarket
-// 3. getOrderBook + getPrice
-// 4. createAndPostOrder (ou createAndPostMarketOrder)
-// 5. getOpenOrders
-// 6. getTrades
-// 7. cancelOrder(s) quando necessário
+// 1) init client com authToken (Sanctum)
+// 2) getMarkets / getMarket
+// 3) getOrderBook / getPrice / getSpread
+// 4) createAndPostOrder (ou createAndPostMarketOrder)
+// 5) getOpenOrders
+// 6) getTrades
+// 7) cancelOrder(s) quando necessário
 ```
 
 ---
 
 ## Notas importantes
 
-1. **Ambiente**: confira `host`, `chainId`, `signatureType` e `funderAddress` corretos.
-2. **Tick size e negRisk**: passe os valores corretos do mercado para evitar rejeição.
-3. **Compat PREVISIONS**: nos métodos de leitura do SDK compatível, a camada de compatibilidade trata mapeamentos necessários entre `outcomeId` e campos internos.
-4. **Produção**: sempre adicionar retries, observabilidade e tratamento explícito de erros de rede/assinatura.
+1. **Sanctum-first**: para API interna, priorize `authToken` no client.
+2. **Compat funcional**: a SDK mantém mapeamentos necessários de payload/response nos métodos, sem depender de heurística por host.
+3. **Campos de mercado**: use `outcomeId` nos métodos de leitura e `tokenID` nos payloads de criação de ordem, conforme contratos atuais da SDK.
+4. **Produção**: adicione retry, timeout e tratamento de erro explícito.
