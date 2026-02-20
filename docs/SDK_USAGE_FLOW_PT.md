@@ -70,10 +70,11 @@ const spread = await client.getSpread(outcomeId);
 ## 3) Wallet interna
 
 ```ts
-const balances = await client.getWalletBalances({
-  token_ids: ["TOKEN_ID"],
-  include_zero_balances: false,
-});
+// fluxo padrão: buscar saldos por currency (sem filtrar por outcome/token)
+const balances = await client.getWalletBalances();
+
+// opcional: incluir saldos zerados
+// const balances = await client.getWalletBalances({ include_zero_balances: true });
 ```
 
 Endpoint usado:
