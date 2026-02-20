@@ -309,9 +309,18 @@ export class ClobClient {
     }
 
     public async getOrderBooks(params: BookParams[]): Promise<OrderBookSummary[]> {
-        const results: OrderBookSummary[] = await this.post(`${this.host}${GET_ORDER_BOOKS}`, {
-            data: params,
+        const payload = this.isPrevisionsCompatHost()
+            ? params.map(param => this.mapBookParamToCompat(param))
+            : params;
+
+        const resultsRaw: any[] = await this.post(`${this.host}${GET_ORDER_BOOKS}`, {
+            data: payload,
         });
+
+        const results: OrderBookSummary[] = this.isPrevisionsCompatHost()
+            ? resultsRaw.map(book => this.normalizeOrderBookSummary(book))
+            : resultsRaw;
+
         for (const book of results) {
             this.updateTickSizeFromOrderBook(book);
         }
@@ -401,8 +410,12 @@ export class ClobClient {
     }
 
     public async getMidpoints(params: BookParams[]): Promise<any> {
+        const payload = this.isPrevisionsCompatHost()
+            ? params.map(param => this.mapBookParamToCompat(param))
+            : params;
+
         return this.post(`${this.host}${GET_MIDPOINTS}`, {
-            data: params,
+            data: payload,
         });
     }
 
@@ -425,8 +438,12 @@ export class ClobClient {
     }
 
     public async getPrices(params: BookParams[]): Promise<any> {
+        const payload = this.isPrevisionsCompatHost()
+            ? params.map(param => this.mapBookParamToCompat(param))
+            : params;
+
         return this.post(`${this.host}${GET_PRICES}`, {
-            data: params,
+            data: payload,
         });
     }
 
@@ -437,8 +454,12 @@ export class ClobClient {
     }
 
     public async getSpreads(params: BookParams[]): Promise<any> {
+        const payload = this.isPrevisionsCompatHost()
+            ? params.map(param => this.mapBookParamToCompat(param))
+            : params;
+
         return this.post(`${this.host}${GET_SPREADS}`, {
-            data: params,
+            data: payload,
         });
     }
 
@@ -449,8 +470,12 @@ export class ClobClient {
     }
 
     public async getLastTradesPrices(params: BookParams[]): Promise<any> {
+        const payload = this.isPrevisionsCompatHost()
+            ? params.map(param => this.mapBookParamToCompat(param))
+            : params;
+
         return this.post(`${this.host}${GET_LAST_TRADES_PRICES}`, {
-            data: params,
+            data: payload,
         });
     }
 
@@ -702,16 +727,20 @@ export class ClobClient {
         let results: Trade[] = [];
         next_cursor = next_cursor || INITIAL_CURSOR;
         while (next_cursor != END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
-            const _params: any = {
+            const paginationParams: any = {
                 ...params,
                 next_cursor,
             };
+            const _params: any = this.mapTradeParamsToCompat(paginationParams);
             const response = await this.get(`${this.host}${endpoint}`, {
                 headers,
                 params: _params,
             });
             next_cursor = response.next_cursor;
-            results = [...results, ...response.data];
+            const pageTrades = Array.isArray(response.data)
+                ? response.data.map((trade: Trade) => this.normalizeTrade(trade))
+                : [];
+            results = [...results, ...pageTrades];
         }
         return results;
     }
@@ -737,7 +766,8 @@ export class ClobClient {
 
         next_cursor = next_cursor || INITIAL_CURSOR;
 
-        const _params: any = { ...params, next_cursor };
+        const paginationParams: any = { ...params, next_cursor };
+        const _params: any = this.mapTradeParamsToCompat(paginationParams);
 
         const {
             data,
@@ -752,7 +782,11 @@ export class ClobClient {
             params: _params,
         });
 
-        return { trades: Array.isArray(data) ? [...data] : [], ...rest };
+        const normalizedTrades = Array.isArray(data)
+            ? data.map((trade: Trade) => this.normalizeTrade(trade))
+            : [];
+
+        return { trades: normalizedTrades, ...rest };
     }
 
     public async getBuilderTrades(
@@ -1000,16 +1034,20 @@ export class ClobClient {
         let results: OpenOrder[] = [];
         next_cursor = next_cursor || INITIAL_CURSOR;
         while (next_cursor != END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
-            const _params: any = {
+            const paginationParams: any = {
                 ...params,
                 next_cursor,
             };
+            const _params: any = this.mapOpenOrderParamsToCompat(paginationParams);
             const response = await this.get(`${this.host}${endpoint}`, {
                 headers,
                 params: _params,
             });
             next_cursor = response.next_cursor;
-            results = [...results, ...response.data];
+            const pageOrders = Array.isArray(response.data)
+                ? response.data.map((order: OpenOrder) => this.normalizeOpenOrder(order))
+                : [];
+            results = [...results, ...pageOrders];
         }
         return results;
     }
@@ -1519,6 +1557,89 @@ export class ClobClient {
     private isPrevisionsCompatHost(): boolean {
         const host = this.host.toLowerCase();
         return host.includes("previsions.ai") || process.env.PREVISIONS_CLOB_COMPAT === "1";
+    }
+
+    private mapBookParamToCompat(param: BookParams): any {
+        if (!this.isPrevisionsCompatHost()) {
+            return param;
+        }
+
+        const { token_id, ...rest } = param;
+        return {
+            ...rest,
+            outcome_id: token_id,
+        };
+    }
+
+    private mapOpenOrderParamsToCompat(params?: OpenOrderParams): any {
+        if (!params || !this.isPrevisionsCompatHost()) {
+            return params;
+        }
+
+        const { asset_id, ...rest } = params;
+        if (asset_id == undefined) {
+            return params;
+        }
+
+        return {
+            ...rest,
+            outcome_id: asset_id,
+        };
+    }
+
+    private mapTradeParamsToCompat(params?: TradeParams): any {
+        if (!params || !this.isPrevisionsCompatHost()) {
+            return params;
+        }
+
+        const { asset_id, ...rest } = params;
+        if (asset_id == undefined) {
+            return params;
+        }
+
+        return {
+            ...rest,
+            outcome_id: asset_id,
+        };
+    }
+
+    private normalizeOrderBookSummary(book: any): OrderBookSummary {
+        if (!this.isPrevisionsCompatHost()) {
+            return book as OrderBookSummary;
+        }
+
+        return {
+            ...book,
+            asset_id: book.asset_id ?? book.outcome_id ?? book.token_id,
+        };
+    }
+
+    private normalizeOpenOrder(order: any): OpenOrder {
+        if (!this.isPrevisionsCompatHost()) {
+            return order as OpenOrder;
+        }
+
+        return {
+            ...order,
+            asset_id: order.asset_id ?? order.outcome_id,
+        };
+    }
+
+    private normalizeTrade(trade: any): Trade {
+        if (!this.isPrevisionsCompatHost()) {
+            return trade as Trade;
+        }
+
+        return {
+            ...trade,
+            asset_id: trade.asset_id ?? trade.outcome_id,
+            maker_orders: Array.isArray(trade.maker_orders)
+                ? trade.maker_orders.map((makerOrder: any) => ({
+                    ...makerOrder,
+                    asset_id: makerOrder.asset_id ?? makerOrder.outcome_id,
+                }))
+                : trade.maker_orders,
+        };
     }
 
     private canL1Auth(): void {
