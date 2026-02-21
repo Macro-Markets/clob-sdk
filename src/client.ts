@@ -232,7 +232,7 @@ export class ClobClient {
                 : hostOrConfig;
 
         this.host = config.host.endsWith("/") ? config.host.slice(0, -1) : config.host;
-        this.chainId = config.chainId;
+        this.chainId = config.chainId ?? Chain.POLYGON;
 
         if (config.signer !== undefined) {
             this.signer = config.signer;
@@ -242,7 +242,7 @@ export class ClobClient {
         }
         this.orderBuilder = new OrderBuilder(
             config.signer as Wallet | JsonRpcSigner,
-            config.chainId,
+            this.chainId,
             config.signatureType,
             config.funderAddress,
             config.getSigner,

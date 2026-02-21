@@ -18,7 +18,7 @@ export interface ReadonlyApiKeyResponse {
 
 export interface ClobClientConfig {
     host: string;
-    chainId: Chain;
+    chainId?: Chain;
     signer?: any;
     creds?: ApiKeyCreds;
     signatureType?: SignatureType;

@@ -1,5 +1,4 @@
 import { ClobClient } from "./client.ts";
-import { Chain } from "./types.ts";
 import { GraphQLSdkClient } from "./graphql/client.ts";
 
 /**
@@ -8,11 +7,9 @@ import { GraphQLSdkClient } from "./graphql/client.ts";
 export const createSanctumClient = (
   host: string,
   authToken: string,
-  chainId: Chain = Chain.POLYGON,
 ): ClobClient => {
   return new ClobClient({
     host,
-    chainId,
     authToken,
   });
 };
