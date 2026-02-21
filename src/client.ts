@@ -179,60 +179,10 @@ export class ClobClient {
 
     private readonly tickSizeTtlMs: number;
 
-    constructor(config: ClobClientConfig);
-    // eslint-disable-next-line max-params
-    constructor(
-        host: string,
-        chainId: Chain,
-        signer?: Wallet | JsonRpcSigner,
-        creds?: ApiKeyCreds,
-        signatureType?: SignatureType,
-        funderAddress?: string,
-        geoBlockToken?: string,
-        useServerTime?: boolean,
-        builderConfig?: BuilderConfig,
-        getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
-        retryOnError?: boolean,
-        tickSizeTtlMs?: number,
-        authToken?: string,
-    );
-    // eslint-disable-next-line max-params
-    constructor(
-        hostOrConfig: string | ClobClientConfig,
-        chainId?: Chain,
-        signer?: Wallet | JsonRpcSigner,
-        creds?: ApiKeyCreds,
-        signatureType?: SignatureType,
-        funderAddress?: string,
-        geoBlockToken?: string,
-        useServerTime?: boolean,
-        builderConfig?: BuilderConfig,
-        getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
-        retryOnError?: boolean,
-        tickSizeTtlMs?: number,
-        authToken?: string,
-    ) {
-        const config: ClobClientConfig =
-            typeof hostOrConfig === "string"
-                ? {
-                    host: hostOrConfig,
-                    chainId: chainId as Chain,
-                    signer,
-                    creds,
-                    signatureType,
-                    funderAddress,
-                    geoBlockToken,
-                    useServerTime,
-                    builderConfig,
-                    getSigner,
-                    retryOnError,
-                    tickSizeTtlMs,
-                    authToken,
-                }
-                : hostOrConfig;
+    constructor(config: ClobClientConfig) {
 
         this.host = config.host.endsWith("/") ? config.host.slice(0, -1) : config.host;
-        this.chainId = config.chainId ?? Chain.POLYGON;
+        this.chainId = 137 as Chain;
 
         if (config.signer !== undefined) {
             this.signer = config.signer;

@@ -2,7 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { Side as UtilsSide, SignatureType } from "@polymarket/order-utils";
 import { ClobClient } from "../src/client.ts";
-import { Chain, OrderType, Side } from "../src/types.ts";
+import { OrderType, Side } from "../src/types.ts";
 import type { RequestOptions } from "../src/http-helpers/index.ts";
 
 class TestClient extends ClobClient {
@@ -44,7 +44,7 @@ class FlowTestClient extends TestClient {
 
 describe("ClobClient sanctum functional compatibility", () => {
     it("maps token_id to outcome_id on batch endpoints without host-coupling", async () => {
-        const client = new TestClient("https://clob.polymarket.com", Chain.POLYGON);
+        const client = new TestClient({ host: "https://clob.polymarket.com" });
         client.postResponse = [];
 
         const params = [{ token_id: "123", side: Side.BUY }];
@@ -66,21 +66,10 @@ describe("ClobClient sanctum functional compatibility", () => {
     });
 
     it("normalizes outcome_id responses back to asset_id", async () => {
-        const client = new TestClient(
-            "https://api.example.com",
-            Chain.POLYGON,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            "test-token",
-        );
+        const client = new TestClient({
+            host: "https://api.example.com",
+            authToken: "test-token",
+        });
 
         client.postResponse = [{ outcome_id: "outcome-1", bids: [], asks: [], tick_size: "0.01" }];
         const books = await client.getOrderBooks([{ token_id: "outcome-1", side: Side.BUY }] as any);
@@ -107,21 +96,10 @@ describe("ClobClient sanctum functional compatibility", () => {
 
     it("allows L2 requests with Sanctum token and no signer", async () => {
         const sanctumToken = "test-token";
-        const client = new TestClient(
-            "https://api.example.com",
-            Chain.POLYGON,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            sanctumToken,
-        );
+        const client = new TestClient({
+            host: "https://api.example.com",
+            authToken: sanctumToken,
+        });
 
         client.getResponse = { next_cursor: "LTE=", data: [{ id: "o1", outcome_id: "outcome-3" }] };
 
@@ -134,21 +112,10 @@ describe("ClobClient sanctum functional compatibility", () => {
 
     it("calls wallet balances endpoint with Sanctum auth", async () => {
         const sanctumToken = "test-token";
-        const client = new TestClient(
-            "https://api.example.com",
-            Chain.POLYGON,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            sanctumToken,
-        );
+        const client = new TestClient({
+            host: "https://api.example.com",
+            authToken: sanctumToken,
+        });
 
         client.getResponse = { balances: [] };
 
@@ -161,21 +128,10 @@ describe("ClobClient sanctum functional compatibility", () => {
 
     it("calls order preview endpoint and normalizes token id aliases", async () => {
         const sanctumToken = "test-token";
-        const client = new TestClient(
-            "https://api.example.com",
-            Chain.POLYGON,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            sanctumToken,
-        );
+        const client = new TestClient({
+            host: "https://api.example.com",
+            authToken: sanctumToken,
+        });
 
         client.postResponse = { ok: true };
 
@@ -188,21 +144,10 @@ describe("ClobClient sanctum functional compatibility", () => {
 
     it("executes buy/sell flow with Sanctum auth: price, preview, orders, open orders and trades", async () => {
         const sanctumToken = "test-token";
-        const client = new FlowTestClient(
-            "https://api.example.com",
-            Chain.POLYGON,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            sanctumToken,
-        );
+        const client = new FlowTestClient({
+            host: "https://api.example.com",
+            authToken: sanctumToken,
+        });
 
         client.getResponse = { price: "0.56" };
         await client.getPrice("token-5", Side.BUY);
