@@ -15,6 +15,24 @@ export interface MarketListInput {
   language: string;
 }
 
+export interface MarketCategoriesInput {
+  language: string;
+}
+
+export interface MarketHistoryInput {
+  marketPredictionId: number;
+  interval?: string;
+  first?: number;
+  page?: number;
+}
+
+export interface MyOrdersInput {
+  first: number;
+  page?: number;
+  status?: string;
+  outcomeId?: number;
+}
+
 export interface OrderInput {
   amount: number;
   outcome_id: number;
@@ -38,4 +56,14 @@ export interface MarketOrderPreview {
   insufficient_balance: boolean;
   insufficient_shares: boolean;
   errors: string[];
+}
+
+export interface PreviewAndExecuteResult<TOrder = unknown> {
+  preview: MarketOrderPreview;
+  order: TOrder;
+}
+
+export interface PreviewAndExecuteOptions {
+  allowInsufficientBalance?: boolean;
+  allowInsufficientShares?: boolean;
 }

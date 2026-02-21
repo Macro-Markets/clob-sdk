@@ -45,4 +45,6 @@ const signatureType = 1;
   })();
 ```
 
-See [examples](examples/) for more information
+See [examples](examples/) for more information.
+
+For PREVISIONS GraphQL/Apollo usage, see [docs/GRAPHQL_APOLLO_PREVISIONS.md](docs/GRAPHQL_APOLLO_PREVISIONS.md).

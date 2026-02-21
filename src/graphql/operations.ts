@@ -153,3 +153,70 @@ export const ORDER_BOOK_ASKS_QUERY = gql`
     }
   }
 `;
+
+export const MARKET_CATEGORIES_QUERY = gql`
+  query marketCategories($language: String!) {
+    marketCategories(language: $language) {
+      id
+      name
+      slug
+      markets_count
+    }
+  }
+`;
+
+export const MARKET_HISTORY_QUERY = gql`
+  query marketHistory($marketPredictionId: Int!, $interval: String, $first: Int, $page: Int) {
+    marketHistory(marketPredictionId: $marketPredictionId, interval: $interval, first: $first, page: $page) {
+      data {
+        timestamp
+        price
+        volume
+      }
+      paginatorInfo {
+        total
+        currentPage
+      }
+    }
+  }
+`;
+
+export const MY_ORDERS_QUERY = gql`
+  query myOrders($first: Int!, $page: Int, $status: String, $outcomeId: Int) {
+    myOrders(first: $first, page: $page, status: $status, outcomeId: $outcomeId) {
+      data {
+        id
+        status
+        side
+        amount
+        filled_amount
+        limit_price
+        created_at
+        outcome_id
+      }
+      paginatorInfo {
+        total
+        currentPage
+      }
+    }
+  }
+`;
+
+export const PAGINATED_TRADES_QUERY = gql`
+  query paginatedTrades($filters: MarketFilter) {
+    marketTransactions(filter: $filters) {
+      results {
+        id
+        operation
+        outcome_title
+        amount
+        shares_amount
+        created_at
+      }
+      paginate {
+        exclusive_start_key
+        page_count
+      }
+    }
+  }
+`;

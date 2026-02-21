@@ -182,6 +182,34 @@ try {
 
 ---
 
+## Testes (mockados)
+
+### Suítes atuais
+- `tests/client.compat.test.ts`
+  - compatibilidade de aliases (`token_id`/`outcome_id`, `asset_id`)
+  - fluxo Sanctum (price/preview/order/open-orders/trades)
+  - wallet balances e preview REST compat
+- `tests/graphql.client.mock.test.ts`
+  - mercados (list)
+  - preview GraphQL
+  - buy/sell GraphQL
+  - posições
+  - activity
+  - asks/bids (order book)
+
+### Rodar localmente
+```bash
+pnpm mocha --node-option import=tsx --require jsdom-global/register \
+  "tests/client.compat.test.ts" \
+  "tests/graphql.client.mock.test.ts" \
+  --timeout 120000 --exit
+```
+
+### Resultado esperado
+- `11 passing` (6 compat + 5 GraphQL mockados)
+
+---
+
 ## Observações finais
 - Sem wallet externa de usuário (wallet interna no back).
 - Auth oficial do fluxo: Sanctum token.
