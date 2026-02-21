@@ -31,7 +31,7 @@ import type {
   PreviewOrderInput,
 } from "./types.ts";
 
-export class PrevisionsGraphQLClient {
+export class GraphQLSdkClient {
   public readonly apollo: ApolloClient<NormalizedCacheObject>;
 
   constructor(config: GraphQLClientConfig, apolloClient?: ApolloClient<NormalizedCacheObject>) {

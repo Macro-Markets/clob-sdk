@@ -1,185 +1,66 @@
-# CLOB SDK — Guia de uso (API interna / Sanctum)
+# CLOB SDK — Usage Guide (Sanctum + GraphQL)
 
-Documentação revisada com nomenclatura alinhada ao back.
+> Note: despite this filename, this guide is in English by request.
 
-## Convenção de nomes (usar sempre)
-- `marketPredictionId` → identificador do mercado (`market_prediction_id`)
-- `outcomeId` → identificador do outcome (`outcome_id`)
-- `currencyCode` → moeda da wallet interna (`currency_code`)
-- `orderAmount` → valor/quantidade da ordem
-- `limitPrice` → preço limite
+## Naming
+- `marketPredictionId`: market identifier
+- `outcomeId`: outcome identifier
+- `currencyCode`: internal wallet currency
+- `orderAmount`: order amount
+- `limitPrice`: limit price
 
-> Observação de compatibilidade da SDK:
-> - alguns métodos legados ainda usam `tokenID`/`asset_id` na assinatura;
-> - trate `tokenID` como equivalente a `outcomeId`.
-
----
-
-## Fluxo completo (compra e venda)
-1. Autenticar com Sanctum (`authToken`)
-2. Consultar mercado / book / preço
-3. Consultar wallet interna (`/api/v1/clob/wallet/balances`)
-4. Fazer preview (`/api/v1/clob/orders/preview`)
-5. Executar BUY/SELL (`/order`)
-6. Consultar open orders e trades
-
----
-
-## 1) Inicialização (Sanctum-first)
+## 1) Initialize REST client (Sanctum)
 
 ```ts
-import { Chain, Side, OrderType, createPrevisionsSanctumClient } from "@polymarket/clob-client";
+import { createSanctumClient } from "@polymarket/clob-client";
 
-const host = "https://api.seu-dominio.com";
-const chain = Chain.AMOY;
-const authToken = "SEU_TOKEN_SANCTUM";
-
-const client = createPrevisionsSanctumClient(host, chain, authToken);
+const client = createSanctumClient(
+  "https://api.your-domain.com",
+  "YOUR_SANCTUM_TOKEN",
+);
 ```
 
----
-
-## 2) Mercado / book / preço
+## 2) Market data
 
 ```ts
-const marketPredictionId = "SEU_MARKET_PREDICTION_ID";
-const outcomeId = "SEU_OUTCOME_ID";
-
-const market = await client.getMarket(marketPredictionId);
-const book = await client.getOrderBook(outcomeId);
-const priceBuy = await client.getPrice(outcomeId, "buy");
-const spread = await client.getSpread(outcomeId);
+const market = await client.getMarket("MARKET_PREDICTION_ID");
+const book = await client.getOrderBook("OUTCOME_ID");
+const price = await client.getPrice("OUTCOME_ID", "buy");
 ```
 
----
-
-## 3) Wallet interna (por currency)
+## 3) Order preview and execution
 
 ```ts
-const balances = await client.getWalletBalances();
-
-// opcional
-// const balances = await client.getWalletBalances({ include_zero_balances: true });
-```
-
-Endpoint:
-- `GET /api/v1/clob/wallet/balances`
-
----
-
-## 4) Preview da ordem
-
-```ts
-const outcomeId = "SEU_OUTCOME_ID";
-const orderAmount = 100;
-const limitPrice = 0.56;
-
 const preview = await client.previewOrder({
-  outcome_id: outcomeId,
-  side: Side.BUY,
-  order_type: OrderType.FOK,
-  amount: orderAmount,
-  price: limitPrice,
+  outcome_id: "OUTCOME_ID",
+  side: "BUY",
+  amount: 100,
+  price: 0.56,
 });
-```
 
-Endpoint:
-- `POST /api/v1/clob/orders/preview`
+if (preview?.errors?.length) throw new Error(preview.errors.join(", "));
 
----
-
-## 5) Executar compra/venda
-
-### Ordem limite (BUY e SELL)
-```ts
-const outcomeId = "SEU_OUTCOME_ID";
-
-const buyOrder = await client.createAndPostOrder(
-  {
-    // assinatura legada da SDK: tokenID == outcome_id
-    tokenID: outcomeId,
-    side: Side.BUY,
-    price: 0.56,
-    size: 120,
-  },
+const order = await client.createAndPostOrder(
+  { tokenID: "OUTCOME_ID", side: "BUY", price: 0.56, size: 100 },
   { tickSize: "0.01", negRisk: false },
-  OrderType.GTC,
-);
-
-const sellOrder = await client.createAndPostOrder(
-  {
-    tokenID: outcomeId,
-    side: Side.SELL,
-    price: 0.58,
-    size: 80,
-  },
-  { tickSize: "0.01", negRisk: false },
-  OrderType.GTC,
+  "GTC",
 );
 ```
 
-### Ordem de mercado
-```ts
-const marketBuy = await client.createAndPostMarketOrder(
-  {
-    tokenID: outcomeId,
-    side: Side.BUY,
-    amount: 250,
-  },
-  { tickSize: "0.01", negRisk: false },
-  OrderType.FOK,
-);
-```
-
----
-
-## 6) Pós-execução
+## 4) Post-trade
 
 ```ts
-const outcomeId = "SEU_OUTCOME_ID";
-
-// assinatura legada usa asset_id; equivale ao outcomeId no fluxo compat
-const openOrders = await client.getOpenOrders({ asset_id: outcomeId });
-const trades = await client.getTrades({ asset_id: outcomeId });
+const openOrders = await client.getOpenOrders({ asset_id: "OUTCOME_ID" });
+const trades = await client.getTrades({ asset_id: "OUTCOME_ID" });
 ```
 
----
+## 5) Tests (mocked)
 
-## Erros de validação esperados
-- saldo insuficiente
-- shares insuficientes para SELL
-- `limit_price` inválido
-- ordem abaixo do mínimo
-
-```ts
-try {
-  await client.previewOrder(payload);
-  await client.createAndPostOrder(order, opts, OrderType.GTC);
-} catch (err: any) {
-  const message = err?.response?.data?.message || "Falha ao executar ordem";
-  const errors = err?.response?.data?.errors || {};
-  console.error({ message, errors });
-}
-```
-
----
-
-## Testes (mockados)
-
-### Suítes atuais
+### Suites
 - `tests/client.compat.test.ts`
-  - compatibilidade de aliases (`token_id`/`outcome_id`, `asset_id`)
-  - fluxo Sanctum (price/preview/order/open-orders/trades)
-  - wallet balances e preview REST compat
 - `tests/graphql.client.mock.test.ts`
-  - mercados (list)
-  - preview GraphQL
-  - buy/sell GraphQL
-  - posições
-  - activity
-  - asks/bids (order book)
 
-### Rodar localmente
+### Run
 ```bash
 pnpm mocha --node-option import=tsx --require jsdom-global/register \
   "tests/client.compat.test.ts" \
@@ -187,12 +68,5 @@ pnpm mocha --node-option import=tsx --require jsdom-global/register \
   --timeout 120000 --exit
 ```
 
-### Resultado esperado
-- `11 passing` (6 compat + 5 GraphQL mockados)
-
----
-
-## Observações finais
-- Sem wallet externa de usuário (wallet interna no back).
-- Auth oficial do fluxo: Sanctum token.
-- Testes atuais da SDK são mockados (contrato/fluxo); E2E fica para etapa posterior.
+### Expected
+- `14 passing`

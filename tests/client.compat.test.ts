@@ -42,7 +42,7 @@ class FlowTestClient extends TestClient {
     }
 }
 
-describe("ClobClient previsions functional compatibility", () => {
+describe("ClobClient sanctum functional compatibility", () => {
     it("maps token_id to outcome_id on batch endpoints without host-coupling", async () => {
         const client = new TestClient("https://clob.polymarket.com", Chain.POLYGON);
         client.postResponse = [];

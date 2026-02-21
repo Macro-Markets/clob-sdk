@@ -2,7 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { MockLink } from "@apollo/client/testing/core";
-import { PrevisionsGraphQLClient } from "../src/graphql/client.ts";
+import { GraphQLSdkClient } from "../src/graphql/client.ts";
 import {
   BUY_CLOB_ORDER_MUTATION,
   MARKET_ACTIVITY_QUERY,
@@ -18,7 +18,7 @@ import {
   USER_MARKET_POSITIONS_QUERY,
 } from "../src/graphql/operations.ts";
 
-describe("PrevisionsGraphQLClient mocked coverage", () => {
+describe("GraphQLSdkClient mocked coverage", () => {
   const endpoint = "https://api.example.com/graphql";
 
   const buildClient = (mocks: any[]) => {
@@ -28,7 +28,7 @@ describe("PrevisionsGraphQLClient mocked coverage", () => {
       defaultOptions: { query: { fetchPolicy: "no-cache" } },
     });
 
-    return new PrevisionsGraphQLClient({ endpoint }, apollo);
+    return new GraphQLSdkClient({ endpoint }, apollo);
   };
 
   it("loads markets list", async () => {

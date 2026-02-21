@@ -369,7 +369,6 @@ export interface WalletBalancesResponse {
 export interface OrderPreviewParams {
     [key: string]: any;
     token_id?: string;
-    tokenID?: string;
     outcome_id?: string;
     side?: Side;
     order_type?: OrderType;
