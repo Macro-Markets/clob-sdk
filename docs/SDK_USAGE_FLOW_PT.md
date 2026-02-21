@@ -28,31 +28,13 @@ Documentação revisada com nomenclatura alinhada ao back.
 ## 1) Inicialização (Sanctum-first)
 
 ```ts
-import { ClobClient, Chain, Side, OrderType } from "@polymarket/clob-client";
+import { Chain, Side, OrderType, createPrevisionsSanctumClient } from "@polymarket/clob-client";
 
 const host = "https://api.seu-dominio.com";
 const chain = Chain.AMOY;
-const authToken = process.env.CLOB_TOKEN!;
+const authToken = "SEU_TOKEN_SANCTUM";
 
-// helper local para esconder parâmetros legados opcionais
-const createSanctumClient = (host: string, chain: Chain, authToken: string) =>
-  new ClobClient(
-    host,
-    chain,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    authToken,
-  );
-
-const client = createSanctumClient(host, chain, authToken);
+const client = createPrevisionsSanctumClient(host, chain, authToken);
 ```
 
 ---

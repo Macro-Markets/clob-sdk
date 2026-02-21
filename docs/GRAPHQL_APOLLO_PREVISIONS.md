@@ -5,13 +5,13 @@ Este guia cobre o client `PrevisionsGraphQLClient` (GraphQL-only, Apollo), inclu
 ## Inicialização
 
 ```ts
-import { PrevisionsGraphQLClient } from "@polymarket/clob-client";
+import { createPrevisionsGraphQLClient } from "@polymarket/clob-client";
 
-const client = new PrevisionsGraphQLClient({
-  endpoint: "https://api.seu-dominio.com/graphql",
-  token: process.env.PREVISIONS_TOKEN,
-  locale: "pt-BR",
-});
+const client = createPrevisionsGraphQLClient(
+  "https://api.seu-dominio.com/graphql",
+  "SEU_TOKEN_SANCTUM",
+  "pt-BR",
+);
 ```
 
 ## 1) Descoberta de mercado
