@@ -145,9 +145,9 @@ import { RfqClient } from "./rfq-client.ts";
 import type { IRfqClient, RfqDeps } from "./rfq-deps.ts";
 
 export class ClobClient {
-    readonly host: string;
+    private static readonly DEFAULT_CHAIN_ID: Chain = 137 as Chain;
 
-    readonly chainId: Chain;
+    readonly host: string;
 
     // Used to perform Level 1 authentication and sign orders
     readonly signer?: Wallet | JsonRpcSigner;
@@ -182,7 +182,6 @@ export class ClobClient {
     constructor(config: ClobClientConfig) {
 
         this.host = config.host.endsWith("/") ? config.host.slice(0, -1) : config.host;
-        this.chainId = 137 as Chain;
 
         if (config.signer !== undefined) {
             this.signer = config.signer;
@@ -192,7 +191,7 @@ export class ClobClient {
         }
         this.orderBuilder = new OrderBuilder(
             config.signer as Wallet | JsonRpcSigner,
-            this.chainId,
+            ClobClient.DEFAULT_CHAIN_ID,
             config.signatureType,
             config.funderAddress,
             config.getSigner,
@@ -447,7 +446,7 @@ export class ClobClient {
         const endpoint = `${this.host}${CREATE_API_KEY}`;
         const headers = await createL1Headers(
             this.signer as Wallet | JsonRpcSigner,
-            this.chainId,
+            ClobClient.DEFAULT_CHAIN_ID,
             nonce,
             this.useServerTime ? await this.getServerTime() : undefined,
         );
@@ -473,7 +472,7 @@ export class ClobClient {
         const endpoint = `${this.host}${DERIVE_API_KEY}`;
         const headers = await createL1Headers(
             this.signer as Wallet | JsonRpcSigner,
-            this.chainId,
+            ClobClient.DEFAULT_CHAIN_ID,
             nonce,
             this.useServerTime ? await this.getServerTime() : undefined,
         );
