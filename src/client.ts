@@ -192,9 +192,6 @@ export class ClobClient {
         this.orderBuilder = new OrderBuilder(
             config.signer as Wallet | JsonRpcSigner,
             ClobClient.DEFAULT_CHAIN_ID,
-            config.signatureType,
-            config.funderAddress,
-            config.getSigner,
         );
         this.tickSizes = {};
         this.tickSizeTimestamps = {};
