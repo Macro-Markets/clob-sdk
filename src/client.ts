@@ -57,6 +57,7 @@ import type {
     BuilderApiKeyResponse,
     ReadonlyApiKeyResponse,
     HeartbeatResponse,
+    ClobClientConfig,
 } from "./types.ts";
 import { createL1Headers, createL2Headers, injectBuilderHeaders } from "./headers/index.ts";
 import {
@@ -178,6 +179,7 @@ export class ClobClient {
 
     private readonly tickSizeTtlMs: number;
 
+    constructor(config: ClobClientConfig);
     // eslint-disable-next-line max-params
     constructor(
         host: string,
@@ -193,34 +195,69 @@ export class ClobClient {
         retryOnError?: boolean,
         tickSizeTtlMs?: number,
         authToken?: string,
+    );
+    // eslint-disable-next-line max-params
+    constructor(
+        hostOrConfig: string | ClobClientConfig,
+        chainId?: Chain,
+        signer?: Wallet | JsonRpcSigner,
+        creds?: ApiKeyCreds,
+        signatureType?: SignatureType,
+        funderAddress?: string,
+        geoBlockToken?: string,
+        useServerTime?: boolean,
+        builderConfig?: BuilderConfig,
+        getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
+        retryOnError?: boolean,
+        tickSizeTtlMs?: number,
+        authToken?: string,
     ) {
-        this.host = host.endsWith("/") ? host.slice(0, -1) : host;
-        this.chainId = chainId;
+        const config: ClobClientConfig =
+            typeof hostOrConfig === "string"
+                ? {
+                    host: hostOrConfig,
+                    chainId: chainId as Chain,
+                    signer,
+                    creds,
+                    signatureType,
+                    funderAddress,
+                    geoBlockToken,
+                    useServerTime,
+                    builderConfig,
+                    getSigner,
+                    retryOnError,
+                    tickSizeTtlMs,
+                    authToken,
+                }
+                : hostOrConfig;
 
-        if (signer !== undefined) {
-            this.signer = signer;
+        this.host = config.host.endsWith("/") ? config.host.slice(0, -1) : config.host;
+        this.chainId = config.chainId;
+
+        if (config.signer !== undefined) {
+            this.signer = config.signer;
         }
-        if (creds !== undefined) {
-            this.creds = creds;
+        if (config.creds !== undefined) {
+            this.creds = config.creds;
         }
         this.orderBuilder = new OrderBuilder(
-            signer as Wallet | JsonRpcSigner,
-            chainId,
-            signatureType,
-            funderAddress,
-            getSigner,
+            config.signer as Wallet | JsonRpcSigner,
+            config.chainId,
+            config.signatureType,
+            config.funderAddress,
+            config.getSigner,
         );
         this.tickSizes = {};
         this.tickSizeTimestamps = {};
-        this.tickSizeTtlMs = tickSizeTtlMs ?? 300_000;
+        this.tickSizeTtlMs = config.tickSizeTtlMs ?? 300_000;
         this.negRisk = {};
         this.feeRates = {};
-        this.geoBlockToken = geoBlockToken;
-        this.authToken = authToken;
-        this.useServerTime = useServerTime;
-        this.retryOnError = retryOnError;
-        if (builderConfig !== undefined) {
-            this.builderConfig = builderConfig;
+        this.geoBlockToken = config.geoBlockToken;
+        this.authToken = config.authToken;
+        this.useServerTime = config.useServerTime;
+        this.retryOnError = config.retryOnError;
+        if (config.builderConfig !== undefined) {
+            this.builderConfig = config.builderConfig;
         }
 
         const rfqDeps: RfqDeps = {

@@ -10,21 +10,11 @@ export const createSanctumClient = (
   authToken: string,
   chainId: Chain = Chain.POLYGON,
 ): ClobClient => {
-  return new ClobClient(
+  return new ClobClient({
     host,
     chainId,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
     authToken,
-  );
+  });
 };
 
 /**

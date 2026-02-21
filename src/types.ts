@@ -16,6 +16,22 @@ export interface ReadonlyApiKeyResponse {
     apiKey: string;
 }
 
+export interface ClobClientConfig {
+    host: string;
+    chainId: Chain;
+    signer?: any;
+    creds?: ApiKeyCreds;
+    signatureType?: SignatureType;
+    funderAddress?: string;
+    geoBlockToken?: string;
+    useServerTime?: boolean;
+    builderConfig?: any;
+    getSigner?: () => Promise<any> | any;
+    retryOnError?: boolean;
+    tickSizeTtlMs?: number;
+    authToken?: string;
+}
+
 export interface L2HeaderArgs {
     method: string;
     requestPath: string;
