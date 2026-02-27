@@ -1,8 +1,8 @@
 .PHONY: build
 build:
-	@echo "Building ts code..."
+	@echo "Building with tsup..."
 	rm -rf dist
-	pnpm tsc -p tsconfig.build.json
+	pnpm tsup
 
 .PHONY: test
 test:

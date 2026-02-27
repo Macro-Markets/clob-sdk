@@ -16,6 +16,7 @@ import {
     MARKET_HISTORY_QUERY,
     MARKET_QUERY,
     MARKETS_QUERY,
+    ME_QUERY,
     MY_ORDER_BOOKS_QUERY,
     ORDER_BOOK_ASKS_QUERY,
     ORDER_BOOK_BIDS_QUERY,
@@ -38,6 +39,7 @@ import type {
     MarketFilter,
     MarketHistoryInput,
     MarketListInput,
+    MeUser,
     MyOrderBooksInput,
     OrderBook,
     PreviewAndExecuteOptions,
@@ -68,6 +70,11 @@ export class GraphQLSdkClient {
                     query: { fetchPolicy: "no-cache" },
                 },
             });
+    }
+
+    public async me(): Promise<MeUser> {
+        const { data } = await this.apollo.query({ query: ME_QUERY });
+        return data.me;
     }
 
     public async markets(input: MarketListInput) {
