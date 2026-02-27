@@ -61,14 +61,6 @@
     "dependencies": {
         "@apollo/client": "^3.13.8",
         "graphql": "^16.11.0",
-        "@ethersproject/providers": "^5.7.2",
-        "@ethersproject/units": "^5.7.0",
-        "@ethersproject/wallet": "^5.7.0",
-        "@polymarket/builder-signing-sdk": "^0.0.8",
-        "@polymarket/order-utils": "^3.0.1",
-        "axios": "^1.0.0",
-        "browser-or-node": "^2.1.1",
-        "ethers": "^5.7.1",
         "tslib": "^2.4.0"
     },
     "devDependencies": {
