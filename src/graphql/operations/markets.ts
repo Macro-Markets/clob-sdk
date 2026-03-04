@@ -23,6 +23,7 @@ export const MARKETS_QUERY = gql`
                 slug
                 volume
                 currency_code
+                status
             }
             paginatorInfo {
                 total

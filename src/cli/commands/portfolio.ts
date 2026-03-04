@@ -11,7 +11,7 @@ portfolioCommand
     .description("List your open positions across markets")
     .option("--category <slugs...>", "Filter by category slugs")
     .option("--json", "Output raw JSON", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.positions(opts.category);
@@ -22,7 +22,7 @@ portfolioCommand
             }
 
             if (Array.isArray(result) && result.length > 0) {
-                const rows = result.map((p) => ({
+                const rows = result.map(p => ({
                     market: p.marketPredictionTitle,
                     outcome: p.outcomeTitle,
                     shares: p.shares,
@@ -49,7 +49,7 @@ portfolioCommand
     .option("--first <n>", "Results per page", "10")
     .option("--page <n>", "Page number", "1")
     .option("--json", "Output raw JSON", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.myOrderBooks({
@@ -64,12 +64,16 @@ portfolioCommand
                 return;
             }
 
-            const items = result?.data ?? result;
-            if (Array.isArray(items) && items.length > 0) {
-                output(items, false);
-            } else {
-                printJson(result);
+            const items =
+                (result as { data?: unknown[] })?.data ?? (Array.isArray(result) ? result : []);
+            if (items.length === 0) {
+                printText("No orders.");
+                return;
             }
+            output(items, false, {
+                excludeColumns: ["updated_at", "__typename"],
+                dateKeys: ["created_at"],
+            });
         }),
     );
 
@@ -92,7 +96,7 @@ portfolioCommand
             if (result.shareTotalsByOutcome?.length > 0) {
                 printText("Share totals by outcome:");
                 output(
-                    result.shareTotalsByOutcome.map((s) => ({
+                    result.shareTotalsByOutcome.map(s => ({
                         outcomeId: s.market_outcome_id,
                         marketId: s.market_id,
                         amount: s.amount,

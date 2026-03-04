@@ -29,19 +29,25 @@ marketsCommand
                 return;
             }
 
-            const items = result?.data ?? result;
-            if (Array.isArray(items)) {
-                const rows = items.map((m: Record<string, unknown>) => ({
-                    id: m.id,
-                    slug: m.slug,
-                    title: m.title,
-                    status: m.status,
-                    volume: m.volume,
-                }));
-                output(rows, false);
-            } else {
-                printJson(result);
+            const items =
+                (result as { data?: unknown[] })?.data ?? (Array.isArray(result) ? result : []);
+            if (items.length === 0) {
+                printText("No markets.");
+                return;
             }
+            const rows = items.map((m: Record<string, unknown>) => ({
+                id: m.id,
+                slug: m.slug,
+                title: m.title,
+                status:
+                    m.status === true
+                        ? "Active"
+                        : m.status === false
+                        ? "Inactive"
+                        : String(m.status ?? "—"),
+                volume: m.volume,
+            }));
+            output(rows, false);
         }),
     );
 
@@ -86,16 +92,19 @@ marketsCommand
                 return;
             }
 
-            if (Array.isArray(result)) {
-                const rows = result.map((c: Record<string, unknown>) => ({
-                    id: c.id,
-                    slug: c.slug,
-                    title: c.title,
-                }));
-                output(rows, false);
-            } else {
-                printJson(result);
+            const items =
+                (result as { data?: unknown[] })?.data ?? (Array.isArray(result) ? result : []);
+            if (items.length === 0) {
+                printText("No categories.");
+                return;
             }
+            const rows = items.map((c: Record<string, unknown>) => ({
+                id: c.id,
+                slug: c.slug,
+                title: c.name ?? c.title,
+                total_markets: c.total_markets,
+            }));
+            output(rows, false);
         }),
     );
 

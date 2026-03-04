@@ -35,6 +35,7 @@ export function CLI({ program }: CLIProps): React.JSX.Element {
             }
 
             if (trimmed === "help") {
+                outputStore.push({ type: "command", text: trimmed });
                 const { columns, rows } = getHelpTableData();
                 outputStore.push({ type: "table", columns, rows });
                 return;
@@ -46,6 +47,7 @@ export function CLI({ program }: CLIProps): React.JSX.Element {
                 return;
             }
 
+            outputStore.push({ type: "command", text: trimmed });
             const tokens = trimmed.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
             const args = ["node", "market-sdk", ...tokens];
             try {
@@ -70,7 +72,6 @@ export function CLI({ program }: CLIProps): React.JSX.Element {
                         onChange={setInputValue}
                         onSubmit={handleSubmit}
                         history={history}
-                        placeholder="Type a command..."
                     />
                 }
             />

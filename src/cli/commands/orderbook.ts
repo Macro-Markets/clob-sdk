@@ -22,10 +22,16 @@ orderbookCommand
 
             printText(`Last trade price: ${result.last_trade_price}`);
 
+            const formatSizes = (s: unknown): string =>
+                Array.isArray(s) ? (s as number[]).join(", ") : String(s ?? "");
+
             printText("BIDS:");
             if (result.bids?.length) {
                 output(
-                    result.bids.map(b => ({ price: b.price, sizes: b.sizes.join(", ") })),
+                    result.bids.map((b: { price?: unknown; sizes?: unknown }) => ({
+                        price: b.price,
+                        sizes: formatSizes(b.sizes),
+                    })),
                     false,
                 );
             } else {
@@ -35,7 +41,10 @@ orderbookCommand
             printText("ASKS:");
             if (result.asks?.length) {
                 output(
-                    result.asks.map(a => ({ price: a.price, sizes: a.sizes.join(", ") })),
+                    result.asks.map((a: { price?: unknown; sizes?: unknown }) => ({
+                        price: a.price,
+                        sizes: formatSizes(a.sizes),
+                    })),
                     false,
                 );
             } else {
@@ -64,18 +73,19 @@ orderbookCommand
                 return;
             }
 
-            const items = result?.data ?? result;
-            if (Array.isArray(items)) {
-                output(
-                    items.map((b: Record<string, unknown>) => ({
-                        price: b.price,
-                        sizes: Array.isArray(b.sizes) ? (b.sizes as number[]).join(", ") : b.sizes,
-                    })),
-                    false,
-                );
-            } else {
-                printJson(result);
+            const items =
+                (result as { data?: unknown[] })?.data ?? (Array.isArray(result) ? result : []);
+            if (items.length === 0) {
+                printText("No bids.");
+                return;
             }
+            output(
+                items.map((b: Record<string, unknown>) => ({
+                    price: b.price,
+                    sizes: Array.isArray(b.sizes) ? (b.sizes as number[]).join(", ") : b.sizes,
+                })),
+                false,
+            );
         }),
     );
 
@@ -99,17 +109,18 @@ orderbookCommand
                 return;
             }
 
-            const items = result?.data ?? result;
-            if (Array.isArray(items)) {
-                output(
-                    items.map((a: Record<string, unknown>) => ({
-                        price: a.price,
-                        sizes: Array.isArray(a.sizes) ? (a.sizes as number[]).join(", ") : a.sizes,
-                    })),
-                    false,
-                );
-            } else {
-                printJson(result);
+            const items =
+                (result as { data?: unknown[] })?.data ?? (Array.isArray(result) ? result : []);
+            if (items.length === 0) {
+                printText("No asks.");
+                return;
             }
+            output(
+                items.map((a: Record<string, unknown>) => ({
+                    price: a.price,
+                    sizes: Array.isArray(a.sizes) ? (a.sizes as number[]).join(", ") : a.sizes,
+                })),
+                false,
+            );
         }),
     );

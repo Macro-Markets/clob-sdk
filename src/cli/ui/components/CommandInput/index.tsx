@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import TextInput from "ink-text-input";
 
 export interface CommandInputProps {
     value: string;
     onChange: (value: string) => void;
     onSubmit: (value: string) => void;
     history?: readonly string[];
-    placeholder?: string;
 }
 
 export function CommandInput({
@@ -15,49 +13,103 @@ export function CommandInput({
     onChange,
     onSubmit,
     history = [],
-    placeholder = "Type a command...",
 }: CommandInputProps): React.JSX.Element {
     const [historyIndex, setHistoryIndex] = useState(-1);
-    const historyIndexRef = useRef(-1);
     const draftRef = useRef(value);
+    const actualValueRef = useRef(value);
 
-    historyIndexRef.current = historyIndex;
+    const [cursor, setCursor] = useState(value.length);
+    const cursorRef = useRef(cursor);
+
+    const setCursorSync = (pos: number) => {
+        cursorRef.current = pos;
+        setCursor(pos);
+    };
 
     useEffect(() => {
+        actualValueRef.current = value;
         if (value === "") {
             setHistoryIndex(-1);
+            setCursorSync(0);
         }
     }, [value]);
 
+    useInput((char, key) => {
+        let currentValue = actualValueRef.current;
+        const currentCursor = cursorRef.current;
+
+        if (key.return) {
+            onSubmit(currentValue);
+            return;
+        }
+
+        if (key.leftArrow) {
+            setCursorSync(Math.max(0, currentCursor - 1));
+            return;
+        }
+
+        if (key.rightArrow) {
+            setCursorSync(Math.min(currentValue.length, currentCursor + 1));
+            return;
+        }
+
+        if (key.backspace || key.delete || char === "\x08" || char === "\x7F") {
+            if (currentCursor > 0) {
+                currentValue =
+                    currentValue.slice(0, currentCursor - 1) + currentValue.slice(currentCursor);
+                actualValueRef.current = currentValue;
+                setCursorSync(currentCursor - 1);
+                onChange(currentValue);
+            }
+            return;
+        }
+
+        if (key.upArrow && history.length > 0) {
+            const nextIndex = historyIndex <= 0 ? history.length - 1 : historyIndex - 1;
+            setHistoryIndex(nextIndex);
+
+            currentValue = history[nextIndex] ?? "";
+            actualValueRef.current = currentValue;
+            setCursorSync(currentValue.length);
+            onChange(currentValue);
+            return;
+        }
+
+        if (key.downArrow && historyIndex >= 0) {
+            const nextIndex = historyIndex >= history.length - 1 ? -1 : historyIndex + 1;
+            setHistoryIndex(nextIndex);
+
+            currentValue = nextIndex === -1 ? draftRef.current : history[nextIndex] ?? "";
+            actualValueRef.current = currentValue;
+            setCursorSync(currentValue.length);
+            onChange(currentValue);
+            return;
+        }
+
+        if (key.ctrl || key.meta) {
+            return;
+        }
+
+        if (char && char !== "\x08" && char !== "\x7F") {
+            currentValue =
+                currentValue.slice(0, currentCursor) + char + currentValue.slice(currentCursor);
+            actualValueRef.current = currentValue;
+            setCursorSync(currentCursor + char.length);
+
+            if (historyIndex === -1) draftRef.current = currentValue;
+            onChange(currentValue);
+        }
+    });
+
+    const [cursorVisible, setCursorVisible] = useState(true);
     useEffect(() => {
-        if (historyIndex === -1) draftRef.current = value;
-    }, [value, historyIndex]);
+        const timer = setInterval(() => setCursorVisible(v => !v), 500);
+        return () => clearInterval(timer);
+    }, []);
 
-    const handleChange = (next: string): void => {
-        if (historyIndex === -1) draftRef.current = next;
-        onChange(next);
-    };
-
-    useInput(
-        (_input, key) => {
-            const idx = historyIndexRef.current;
-            if (key.upArrow && history.length > 0) {
-                const nextIndex = idx <= 0 ? history.length - 1 : idx - 1;
-                historyIndexRef.current = nextIndex;
-                setHistoryIndex(nextIndex);
-                onChange(history[nextIndex] ?? "");
-                return;
-            }
-            if (key.downArrow && idx >= 0) {
-                const nextIndex = idx >= history.length - 1 ? -1 : idx + 1;
-                historyIndexRef.current = nextIndex;
-                setHistoryIndex(nextIndex);
-                onChange(nextIndex === -1 ? draftRef.current : history[nextIndex] ?? "");
-                return;
-            }
-        },
-        { isActive: true },
-    );
+    const beforeCursor = value.slice(0, cursor);
+    const atCursor = value.slice(cursor, cursor + 1) || " ";
+    const afterCursor = value.slice(cursor + 1);
 
     return (
         <Box flexDirection="row">
@@ -65,13 +117,11 @@ export function CommandInput({
                 ➜{" "}
             </Text>
             <Box paddingLeft={1}>
-                <TextInput
-                    value={value}
-                    onChange={handleChange}
-                    onSubmit={onSubmit}
-                    placeholder={placeholder}
-                    showCursor
-                />
+                <Text>
+                    {beforeCursor}
+                    <Text inverse={cursorVisible}>{atCursor}</Text>
+                    {afterCursor}
+                </Text>
             </Box>
         </Box>
     );

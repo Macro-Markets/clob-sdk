@@ -30,7 +30,10 @@ export const activityCommand = new Command("activity")
                 printText("No activity.");
                 return;
             }
-            output(results, false);
+            output(results, false, {
+                excludeColumns: ["transaction_type", "__typename"],
+                dateKeys: ["created_at"],
+            });
         }),
     );
 
@@ -61,6 +64,9 @@ export const tradesCommand = new Command("trades")
                 printText("No trades.");
                 return;
             }
-            output(results, false);
+            output(results, false, {
+                excludeColumns: ["transaction_type", "__typename"],
+                dateKeys: ["created_at"],
+            });
         }),
     );
