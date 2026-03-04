@@ -8,7 +8,7 @@ import { createGraphQLClient } from "@macro-markets/market-sdk";
 const client = createGraphQLClient(
     "https://api.your-domain.com/graphql",
     "YOUR_SANCTUM_TOKEN",
-    "en", // optional locale (default "en")
+    "en", // optional locale (default "en") — sent as Accept-Language header
     { "X-Custom-Header": "value" }, // optional headers
 );
 ```

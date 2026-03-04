@@ -31,6 +31,8 @@ market-sdk portfolio positions
 
 **Environment:** Set `ENDPOINT` and `API_TOKEN` in a `.env` file or export them. Commands that need auth (portfolio, orders, activity, trades) require a valid `API_TOKEN`.
 
+**Language:** All commands that support `--language <lang>` send the value **only via the `Accept-Language` HTTP header**. The backend uses this header for locale (e.g. `markets list`, `markets get`, `markets categories`, `markets history`). Do not rely on passing language as a query variable; the header is the single source of truth.
+
 ---
 
 ## 1. Markets
@@ -62,9 +64,12 @@ market-sdk markets list --json
 
 ### Get a single market by slug
 
+The backend uses the `Accept-Language` header (set via `--language`) to return the market in the requested language.
+
 ```bash
 market-sdk markets get my-market-slug
-market-sdk markets get btc-above-100k-december
+market-sdk markets get will-flamengo-win-the-next-classic-against-fluminense --language pt
+market-sdk markets get btc-above-100k-december --json
 ```
 
 ### List categories
@@ -77,9 +82,14 @@ market-sdk markets categories --json
 
 ### Market price history
 
+Language can be set with `--language` (sends `Accept-Language` header).
+
 ```bash
 # All history (default)
 market-sdk markets history my-market-slug
+
+# With language (e.g. for markets that only have pt)
+market-sdk markets history my-market-slug --language pt
 
 # Specific period: 1h, 1d, 1w, 1m, all
 market-sdk markets history my-market-slug --period 1d

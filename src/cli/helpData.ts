@@ -12,22 +12,22 @@ export const HELP_ROWS: HelpRow[] = [
     {
         Command: "markets list",
         Usage: "[--first <n>] [--page <n>] [--language <lang>] [--keyword <kw>] [--category <slug...>]",
-        Description: "List markets with pagination",
+        Description: "List markets with pagination (--language sent as Accept-Language header)",
     },
     {
         Command: "markets get",
-        Usage: "<slug>",
-        Description: "Get a single market by slug",
+        Usage: "<slug> [--language <lang>]",
+        Description: "Get a single market by slug (--language sent as Accept-Language header)",
     },
     {
         Command: "markets categories",
         Usage: "[--language <lang>]",
-        Description: "List market categories",
+        Description: "List market categories (--language sent as Accept-Language header)",
     },
     {
         Command: "markets history",
-        Usage: "<slug> [--period 1h|1d|1w|1m|all]",
-        Description: "Get market price history",
+        Usage: "<slug> [--language <lang>] [--period 1h|1d|1w|1m|all]",
+        Description: "Get market price history (--language sent as Accept-Language header)",
     },
     // --- orderbook ---
     {

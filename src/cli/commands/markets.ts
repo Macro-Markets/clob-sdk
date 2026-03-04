@@ -9,7 +9,7 @@ marketsCommand
     .description("List markets with pagination")
     .option("--first <n>", "Number of results per page", "10")
     .option("--page <n>", "Page number", "1")
-    .option("--language <lang>", "Language code", "en")
+    .option("--language <lang>", "Language code (sent as Accept-Language header)", "en")
     .option("--keyword <kw>", "Search keyword")
     .option("--category <slugs...>", "Filter by category slugs")
     .option("--json", "Output raw JSON", false)
@@ -54,10 +54,11 @@ marketsCommand
 marketsCommand
     .command("get <slug>")
     .description("Get a single market by slug")
+    .option("--language <lang>", "Language code (sent as Accept-Language header)", "en")
     .option("--json", "Output raw JSON", false)
     .action((slug: string, opts) =>
         runAction(async () => {
-            const client = await getClient();
+            const client = await getClient(opts.language);
             const result = await client.marketBySlug(slug);
             if (opts.json) {
                 printJson(result);
@@ -80,7 +81,7 @@ marketsCommand
 marketsCommand
     .command("categories")
     .description("List market categories")
-    .option("--language <lang>", "Language code", "en")
+    .option("--language <lang>", "Language code (sent as Accept-Language header)", "en")
     .option("--json", "Output raw JSON", false)
     .action(opts =>
         runAction(async () => {
@@ -111,11 +112,12 @@ marketsCommand
 marketsCommand
     .command("history <slug>")
     .description("Get market price history")
+    .option("--language <lang>", "Language code (sent as Accept-Language header)", "en")
     .option("--period <period>", "Time period (e.g. 1h, 1d, 1w, 1m, all)", "all")
     .option("--json", "Output raw JSON", false)
     .action((slug: string, opts) =>
         runAction(async () => {
-            const client = await getClient();
+            const client = await getClient(opts.language);
             const result = await client.marketHistory({ slug, period: opts.period });
             if (opts.json) {
                 printJson(result);
