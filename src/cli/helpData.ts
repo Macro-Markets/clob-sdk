@@ -68,14 +68,14 @@ export const HELP_ROWS: HelpRow[] = [
         Description: "Preview an order before executing",
     },
     {
-        Command: "orders buy",
+        Command: "orders buy-clob",
         Usage: "--outcome <id> --amount <n> [--limit-price <n>] [--preview]",
-        Description: "Place a buy order (CLOB)",
+        Description: "Place a buy order via CLOB",
     },
     {
-        Command: "orders sell",
+        Command: "orders sell-clob",
         Usage: "--outcome <id> --amount <n> [--limit-price <n>] [--preview]",
-        Description: "Place a sell order (CLOB)",
+        Description: "Place a sell order via CLOB",
     },
     {
         Command: "orders cancel",

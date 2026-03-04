@@ -160,14 +160,14 @@ market-sdk portfolio details my-market-slug
 # Preview an order
 market-sdk orders preview --outcome 42 --amount 100 --side BUY
 
-# Place a buy order (CLOB)
-market-sdk orders buy --outcome 42 --amount 100
+# Place a buy order via CLOB
+market-sdk orders buy-clob --outcome 42 --amount 100
 
 # Place a buy order with preview
-market-sdk orders buy --outcome 42 --amount 100 --preview
+market-sdk orders buy-clob --outcome 42 --amount 100 --preview
 
-# Place a sell order (CLOB)
-market-sdk orders sell --outcome 42 --amount 50
+# Place a sell order via CLOB
+market-sdk orders sell-clob --outcome 42 --amount 50
 
 # Cancel an order
 market-sdk orders cancel <orderId>
@@ -179,7 +179,7 @@ market-sdk orders buy-amm --outcome 42 --amount 100
 market-sdk orders sell-amm --outcome 42 --amount 50
 ```
 
-**Options for `orders buy` / `orders sell`:**
+**Options for `orders buy-clob` / `orders sell-clob`:**
 
 | Option               | Description                    |
 | -------------------- | ------------------------------ |

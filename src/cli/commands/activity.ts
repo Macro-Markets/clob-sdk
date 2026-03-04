@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { getClient } from "../auth.ts";
-import { printJson, runAction } from "../format.ts";
+import { output, printJson, printText, runAction } from "../format.ts";
 import type { MarketFilter } from "../../graphql/types/index.ts";
 
 export const activityCommand = new Command("activity")
@@ -21,7 +21,16 @@ export const activityCommand = new Command("activity")
             if (opts.first) filter.limit = parseInt(opts.first, 10);
 
             const result = await client.activity(filter);
-            printJson(result);
+            if (opts.json) {
+                printJson(result);
+                return;
+            }
+            const results = (result as { results?: unknown[] })?.results ?? [];
+            if (results.length === 0) {
+                printText("No activity.");
+                return;
+            }
+            output(results, false);
         }),
     );
 
@@ -43,6 +52,15 @@ export const tradesCommand = new Command("trades")
             if (opts.first) filter.limit = parseInt(opts.first, 10);
 
             const result = await client.tradesPaginated(filter);
-            printJson(result);
+            if (opts.json) {
+                printJson(result);
+                return;
+            }
+            const results = (result as { results?: unknown[] })?.results ?? [];
+            if (results.length === 0) {
+                printText("No trades.");
+                return;
+            }
+            output(results, false);
         }),
     );
