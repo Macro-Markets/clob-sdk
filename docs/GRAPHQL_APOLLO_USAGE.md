@@ -3,16 +3,24 @@
 ## Initialize
 
 ```ts
-import { createGraphQLClient } from "@polymarket/clob-client";
+import { createGraphQLClient } from "@macro-markets/market-sdk";
 
 const client = createGraphQLClient(
     "https://api.your-domain.com/graphql",
     "YOUR_SANCTUM_TOKEN",
-    "en", // optional locale
+    "en", // optional locale (default "en")
+    { "X-Custom-Header": "value" }, // optional headers
 );
 ```
 
-## 1) Discover markets
+## 1) Authenticated user (optional)
+
+```ts
+const me = await client.me();
+// me.id, me.email, etc. (shape depends on backend)
+```
+
+## 2) Discover markets
 
 ```ts
 const markets = await client.markets({ first: 20, page: 1, language: "en" });
@@ -20,7 +28,7 @@ const categories = await client.categories({ language: "en" });
 const market = await client.marketBySlug("market-slug");
 ```
 
-## 2) Market details and history
+## 3) Market details and history
 
 ```ts
 const details = await client.userMarketDetails("market-slug");
@@ -32,7 +40,7 @@ const history = await client.marketHistory({
 });
 ```
 
-## 3) Order book
+## 4) Order book
 
 ```ts
 const outcomeId = 123;
@@ -46,7 +54,7 @@ const bids = await client.bids(outcomeId, 10, 1);
 const asks = await client.asks(outcomeId, 10, 1);
 ```
 
-## 4) My orders and positions
+## 5) My orders and positions
 
 ```ts
 const myOrders = await client.myOrderBooks({
@@ -59,7 +67,7 @@ const myOrders = await client.myOrderBooks({
 const positions = await client.positions(["politics"]);
 ```
 
-## 5) Transactions / activity
+## 6) Transactions / activity
 
 ```ts
 const activity = await client.activity({ market_prediction_id: 456 });
@@ -69,7 +77,7 @@ const trades = await client.tradesPaginated({
 });
 ```
 
-## 6) Preview → CLOB buy/sell
+## 7) Preview → CLOB buy/sell
 
 ```ts
 // Preview first (optional)
@@ -91,13 +99,13 @@ const buyFlow = await client.previewAndBuy({ amount: 100, outcome_id: 123, limit
 const sellFlow = await client.previewAndSell({ amount: 30, outcome_id: 123, limit_price: 0.59 });
 ```
 
-## 7) Cancel CLOB order
+## 8) Cancel CLOB order
 
 ```ts
 await client.cancelOrder({ order_id: "order-uuid" });
 ```
 
-## 8) AMM buy/sell
+## 9) AMM buy/sell
 
 ```ts
 const ammBuy = await client.buyAmm({
@@ -118,6 +126,7 @@ const ammSell = await client.sellAmm({
 
 | Method                | GraphQL operation            |
 | --------------------- | ---------------------------- |
+| `me()`                | `me`                         |
 | `markets()`           | `marketsPredictions`         |
 | `marketBySlug()`      | `marketPrediction`           |
 | `categories()`        | `marketPredictionCategories` |
