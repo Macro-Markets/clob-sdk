@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client/core";
+import { gql } from "@apollo/client/core/index.js";
 
 export const ORDER_BOOK_QUERY = gql`
     query orderBook($outcomeId: Int!) {

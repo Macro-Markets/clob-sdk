@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client/core";
+import { gql } from "@apollo/client/core/index.js";
 
 export const BUY_CLOB_ORDER_MUTATION = gql`
     mutation buyClobOrder($input: ClobOrderInput!) {

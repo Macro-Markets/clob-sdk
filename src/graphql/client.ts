@@ -4,7 +4,7 @@ import {
     InMemoryCache,
     HttpLink,
     type NormalizedCacheObject,
-} from "@apollo/client/core";
+} from "@apollo/client/core/index.js";
 
 // GraphQL operations
 import {

@@ -10,7 +10,7 @@ export const activityCommand = new Command("activity")
     .option("--outcome-id <id>", "Filter by outcome ID")
     .option("--first <n>", "Number of results", "20")
     .option("--json", "Output raw JSON", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const filter: MarketFilter = {};
@@ -18,7 +18,7 @@ export const activityCommand = new Command("activity")
                 filter.market_prediction_id = parseInt(opts.marketPredictionId, 10);
             if (opts.marketId) filter.market_id = parseInt(opts.marketId, 10);
             if (opts.outcomeId) filter.outcome_id = parseInt(opts.outcomeId, 10);
-            if (opts.first) filter.first = parseInt(opts.first, 10);
+            if (opts.first) filter.limit = parseInt(opts.first, 10);
 
             const result = await client.activity(filter);
             printJson(result);
@@ -30,9 +30,9 @@ export const tradesCommand = new Command("trades")
     .option("--market-prediction-id <id>", "Filter by market prediction ID")
     .option("--market-id <id>", "Filter by market ID")
     .option("--outcome-id <id>", "Filter by outcome ID")
-    .option("--first <n>", "Number of results", "20")   
+    .option("--first <n>", "Number of results", "20")
     .option("--json", "Output raw JSON", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const filter: MarketFilter = {};
@@ -40,7 +40,7 @@ export const tradesCommand = new Command("trades")
                 filter.market_prediction_id = parseInt(opts.marketPredictionId, 10);
             if (opts.marketId) filter.market_id = parseInt(opts.marketId, 10);
             if (opts.outcomeId) filter.outcome_id = parseInt(opts.outcomeId, 10);
-            if (opts.first) filter.first = parseInt(opts.first, 10);
+            if (opts.first) filter.limit = parseInt(opts.first, 10);
 
             const result = await client.tradesPaginated(filter);
             printJson(result);

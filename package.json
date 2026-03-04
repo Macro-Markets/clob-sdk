@@ -21,7 +21,7 @@
     "license": "MIT",
     "packageManager": "pnpm@9.15.4",
     "bin": {
-        "market-sdk": "./dist/cli/index.cjs"
+        "market-sdk": "./dist/cli/index.js"
     },
     "scripts": {
         "build": "make build",
@@ -36,6 +36,9 @@
         "commander": "^14.0.3",
         "dotenv": "^16.6.1",
         "graphql": "^16.11.0",
+        "ink": "^6.8.0",
+        "ink-text-input": "^6.0.0",
+        "react": "^19.2.4",
         "tslib": "^2.4.0"
     },
     "devDependencies": {
@@ -44,6 +47,7 @@
         "@types/chai": "^4.3.3",
         "@types/mocha": "^9.1.1",
         "@types/node": "^22.19.1",
+        "@types/react": "^19.2.14",
         "@types/ws": "^8.5.3",
         "@typescript-eslint/eslint-plugin": "^5.37.0",
         "@typescript-eslint/parser": "^5.37.0",

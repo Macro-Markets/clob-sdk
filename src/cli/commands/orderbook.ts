@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { getClient } from "../auth.ts";
-import { output, printJson, runAction } from "../format.ts";
+import { output, printJson, printText, runAction } from "../format.ts";
 
 export const orderbookCommand = new Command("orderbook").description(
     "View order book data for outcomes",
@@ -20,26 +20,26 @@ orderbookCommand
                 return;
             }
 
-            console.log(`Last trade price: ${result.last_trade_price}\n`);
+            printText(`Last trade price: ${result.last_trade_price}`);
 
-            console.log("BIDS:");
+            printText("BIDS:");
             if (result.bids?.length) {
                 output(
-                    result.bids.map((b) => ({ price: b.price, sizes: b.sizes.join(", ") })),
+                    result.bids.map(b => ({ price: b.price, sizes: b.sizes.join(", ") })),
                     false,
                 );
             } else {
-                console.log("  (none)");
+                printText("  (none)");
             }
 
-            console.log("\nASKS:");
+            printText("ASKS:");
             if (result.asks?.length) {
                 output(
-                    result.asks.map((a) => ({ price: a.price, sizes: a.sizes.join(", ") })),
+                    result.asks.map(a => ({ price: a.price, sizes: a.sizes.join(", ") })),
                     false,
                 );
             } else {
-                console.log("  (none)");
+                printText("  (none)");
             }
         }),
     );

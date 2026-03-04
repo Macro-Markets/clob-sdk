@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { getClient } from "../auth.ts";
-import { output, printJson, runAction } from "../format.ts";
+import { output, printJson, printText, runAction } from "../format.ts";
 
 export const portfolioCommand = new Command("portfolio").description(
     "View your portfolio and positions",
@@ -36,7 +36,7 @@ portfolioCommand
                 }));
                 output(rows, false);
             } else {
-                console.log("No open positions.");
+                printText("No open positions.");
             }
         }),
     );
@@ -87,10 +87,10 @@ portfolioCommand
                 return;
             }
 
-            console.log(`Watching: ${result.isWatching ? "yes" : "no"}\n`);
+            printText(`Watching: ${result.isWatching ? "yes" : "no"}`);
 
             if (result.shareTotalsByOutcome?.length > 0) {
-                console.log("Share totals by outcome:");
+                printText("Share totals by outcome:");
                 output(
                     result.shareTotalsByOutcome.map((s) => ({
                         outcomeId: s.market_outcome_id,
@@ -102,7 +102,7 @@ portfolioCommand
                     false,
                 );
             } else {
-                console.log("No shares in this market.");
+                printText("No shares in this market.");
             }
         }),
     );

@@ -21,5 +21,6 @@ export interface MarketFilter {
     market_id?: number;
     outcome_id?: number;
     exclusive_start_key?: string;
-    first?: number;
+    /** Number of results (backend field name is `limit`). */
+    limit?: number;
 }

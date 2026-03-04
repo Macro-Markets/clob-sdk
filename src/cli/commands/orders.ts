@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { getClient } from "../auth.ts";
-import { printJson, runAction } from "../format.ts";
+import { printJson, printText, runAction } from "../format.ts";
 
 export const ordersCommand = new Command("orders").description("Place and manage orders");
 
@@ -12,7 +12,7 @@ ordersCommand
     .requiredOption("--side <BUY|SELL>", "Operation side: BUY or SELL")
     .option("--limit-price <n>", "Limit price")
     .option("--slippage <n>", "Slippage tolerance")
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.previewOrder({
@@ -33,7 +33,7 @@ ordersCommand
     .requiredOption("--amount <n>", "Amount to spend")
     .option("--limit-price <n>", "Limit price")
     .option("--preview", "Preview before executing", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const input = {
@@ -44,9 +44,9 @@ ordersCommand
 
             if (opts.preview) {
                 const result = await client.previewAndBuy(input);
-                console.log("Preview:");
+                printText("Preview:");
                 printJson(result.preview);
-                console.log("\nOrder result:");
+                printText("Order result:");
                 printJson(result.order);
             } else {
                 const result = await client.buy(input);
@@ -62,7 +62,7 @@ ordersCommand
     .requiredOption("--amount <n>", "Amount of shares to sell")
     .option("--limit-price <n>", "Limit price")
     .option("--preview", "Preview before executing", false)
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const input = {
@@ -73,9 +73,9 @@ ordersCommand
 
             if (opts.preview) {
                 const result = await client.previewAndSell(input);
-                console.log("Preview:");
+                printText("Preview:");
                 printJson(result.preview);
-                console.log("\nOrder result:");
+                printText("Order result:");
                 printJson(result.order);
             } else {
                 const result = await client.sell(input);
@@ -102,7 +102,7 @@ ordersCommand
     .requiredOption("--amount <n>", "Amount to spend")
     .option("--target-price <n>", "Target price")
     .option("--slippage <n>", "Slippage tolerance")
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.buyAmm({
@@ -122,7 +122,7 @@ ordersCommand
     .requiredOption("--amount <n>", "Amount of shares to sell")
     .option("--target-price <n>", "Target price")
     .option("--slippage <n>", "Slippage tolerance")
-    .action((opts) =>
+    .action(opts =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.sellAmm({

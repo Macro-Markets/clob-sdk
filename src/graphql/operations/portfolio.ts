@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client/core";
+import { gql } from "@apollo/client/core/index.js";
 
 export const USER_MARKET_POSITIONS_QUERY = gql`
     query userMarketPositions(

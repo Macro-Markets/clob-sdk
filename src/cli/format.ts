@@ -1,13 +1,24 @@
+import { outputStore } from "./store/OutputStore.ts";
+
 /**
- * Print data as formatted JSON to stdout.
+ * Push plain text as a command output block (no JSON/table formatting).
  */
-export function printJson(data: unknown): void {
-    console.log(JSON.stringify(data, null, 2));
+export function printText(text: string): void {
+    if (!text.trim()) return;
+    outputStore.push({ type: "command", text });
 }
 
 /**
- * Print an array of objects as an aligned table.
- * Falls back to JSON for non-array or empty data.
+ * Format data as JSON string and push to output store.
+ */
+export function printJson(data: unknown): void {
+    const text = JSON.stringify(data, null, 2);
+    outputStore.push({ type: "command", text });
+}
+
+/**
+ * Format an array of objects as a table and push to output store (type "table").
+ * Rendered with native Ink Box + Text. Falls back to JSON for non-array or empty data.
  */
 export function printTable(data: unknown): void {
     if (!Array.isArray(data) || data.length === 0) {
@@ -16,30 +27,12 @@ export function printTable(data: unknown): void {
     }
 
     const rows = data as Record<string, unknown>[];
-    const keys = Object.keys(rows[0]!);
-
-    const widths = keys.map(k => {
-        const maxVal = rows.reduce((max, row) => {
-            const len = String(row[k] ?? "").length;
-            return len > max ? len : max;
-        }, 0);
-        return Math.max(k.length, maxVal);
-    });
-
-    const header = keys.map((k, i) => k.padEnd(widths[i]!)).join("  ");
-    const separator = widths.map(w => "─".repeat(w)).join("──");
-
-    console.log(header);
-    console.log(separator);
-
-    for (const row of rows) {
-        const line = keys.map((k, i) => String(row[k] ?? "").padEnd(widths[i]!)).join("  ");
-        console.log(line);
-    }
+    const columns = Object.keys(rows[0]!);
+    outputStore.push({ type: "table", columns, rows });
 }
 
 /**
- * Output based on --json flag.
+ * Output based on --json flag: push to store as JSON or table.
  */
 export function output(data: unknown, json: boolean): void {
     if (json) {
@@ -57,13 +50,18 @@ export function setReplMode(enabled: boolean): void {
 
 /**
  * Wrap an async action with consistent error handling.
+ * In REPL mode, errors are pushed to the output store; otherwise stderr and exit(1).
  */
 export async function runAction(fn: () => Promise<void>): Promise<void> {
     try {
         await fn();
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(`Error: ${msg}`);
-        if (!replMode) process.exit(1);
+        if (replMode) {
+            outputStore.push({ type: "error", text: `Error: ${msg}` });
+        } else {
+            process.stderr.write(`Error: ${msg}\n`);
+            process.exit(1);
+        }
     }
 }
