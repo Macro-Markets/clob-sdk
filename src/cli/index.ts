@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { SDK_VERSION } from "../version.ts";
 import { marketsCommand } from "./commands/markets.ts";
 import { orderbookCommand } from "./commands/orderbook.ts";
 import { portfolioCommand } from "./commands/portfolio.ts";
@@ -13,7 +14,7 @@ program
     .description(
         "CLI for Macro Markets SDK — browse prediction markets, manage orders, view portfolio",
     )
-    .version("1.0.0");
+    .version(SDK_VERSION);
 
 program.addCommand(marketsCommand);
 program.addCommand(orderbookCommand);

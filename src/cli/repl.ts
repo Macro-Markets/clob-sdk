@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { getClient } from "./auth.ts";
 import { setReplMode } from "./format.ts";
 import { outputStore } from "./store/OutputStore.ts";
+import { localeStore } from "./store/localeStore.ts";
 import { printBanner } from "./printBanner.ts";
 import { CLI } from "./ui/index.ts";
 import type { MeUser } from "../graphql/types/index.ts";
@@ -62,7 +63,7 @@ export async function startRepl(program: Command): Promise<void> {
         process.exit(1);
     }
 
-    printBanner(user ?? null);
+    printBanner(user ?? null, { locale: localeStore.getLocale() });
 
     if (!process.stdin.isTTY) {
         process.stderr.write(

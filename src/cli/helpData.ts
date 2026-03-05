@@ -104,6 +104,11 @@ export const HELP_ROWS: HelpRow[] = [
         Description: "View paginated trade history (limit 10–100)",
     },
     // --- shell ---
+    {
+        Command: "language",
+        Usage: "[code]",
+        Description: "Set or show current language (default for markets commands)",
+    },
     { Command: "help", Usage: "", Description: "Show this help" },
     { Command: "clear", Usage: "", Description: "Clear the screen" },
     { Command: "exit", Usage: "", Description: "Exit the shell" },

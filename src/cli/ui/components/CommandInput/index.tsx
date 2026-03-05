@@ -6,6 +6,7 @@ export interface CommandInputProps {
     onChange: (value: string) => void;
     onSubmit: (value: string) => void;
     history?: readonly string[];
+    locale?: string;
 }
 
 export function CommandInput({
@@ -13,6 +14,7 @@ export function CommandInput({
     onChange,
     onSubmit,
     history = [],
+    locale,
 }: CommandInputProps): React.JSX.Element {
     const [historyIndex, setHistoryIndex] = useState(-1);
     const draftRef = useRef(value);
@@ -113,8 +115,9 @@ export function CommandInput({
 
     return (
         <Box flexDirection="row">
+            {locale != null && locale !== "" ? <Text dimColor>[{locale}]</Text> : null}
             <Text color="green" bold>
-                ➜{" "}
+                {" ➜ "}
             </Text>
             <Box paddingLeft={1}>
                 <Text>
