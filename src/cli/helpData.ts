@@ -32,17 +32,17 @@ export const HELP_ROWS: HelpRow[] = [
     // --- orderbook ---
     {
         Command: "orderbook show",
-        Usage: "<outcomeId>",
+        Usage: "--outcome <id> [--json]",
         Description: "Full order book (bids + asks) for an outcome",
     },
     {
         Command: "orderbook bids",
-        Usage: "<outcomeId> [--first <n>] [--page <n>]",
+        Usage: "--outcome <id> [--first <n>] [--page <n>]",
         Description: "List bids for an outcome",
     },
     {
         Command: "orderbook asks",
-        Usage: "<outcomeId> [--first <n>] [--page <n>]",
+        Usage: "--outcome <id> [--first <n>] [--page <n>]",
         Description: "List asks for an outcome",
     },
     // --- portfolio ---

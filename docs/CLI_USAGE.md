@@ -106,24 +106,24 @@ View order book data for a given outcome (by outcome ID).
 ### Full order book (bids + asks)
 
 ```bash
-market-sdk orderbook show 12345
-market-sdk orderbook show 12345 --json
+market-sdk orderbook show --outcome 12345
+market-sdk orderbook show --outcome 12345 --json
 ```
 
 ### Bids only
 
 ```bash
-market-sdk orderbook bids 12345
-market-sdk orderbook bids 12345 --first 20 --page 1
-market-sdk orderbook bids 12345 --json
+market-sdk orderbook bids --outcome 12345
+market-sdk orderbook bids --outcome 12345 --first 20 --page 1
+market-sdk orderbook bids --outcome 12345 --json
 ```
 
 ### Asks only
 
 ```bash
-market-sdk orderbook asks 12345
-market-sdk orderbook asks 12345 --first 15 --page 2
-market-sdk orderbook asks 12345 --json
+market-sdk orderbook asks --outcome 12345
+market-sdk orderbook asks --outcome 12345 --first 15 --page 2
+market-sdk orderbook asks --outcome 12345 --json
 ```
 
 ---
@@ -265,7 +265,7 @@ If you run the CLI with no subcommand, an interactive shell starts. You can type
 ```text
 market-sdk
 > markets list --first 5
-> orderbook show 12345
+> orderbook show --outcome 12345
 > portfolio positions
 > exit
 ```

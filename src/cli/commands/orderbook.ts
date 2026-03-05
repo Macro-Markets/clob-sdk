@@ -7,13 +7,14 @@ export const orderbookCommand = new Command("orderbook").description(
 );
 
 orderbookCommand
-    .command("show <outcomeId>")
+    .command("show")
     .description("Full order book (bids + asks) for an outcome")
+    .requiredOption("--outcome <id>", "Outcome ID")
     .option("--json", "Output raw JSON", false)
-    .action((outcomeId: string, opts) =>
+    .action((opts: { outcome: string; json?: boolean }) =>
         runAction(async () => {
             const client = await getClient();
-            const result = await client.orderBook(parseInt(outcomeId, 10));
+            const result = await client.orderBook(parseInt(opts.outcome, 10));
 
             if (opts.json) {
                 printJson(result);
@@ -54,16 +55,17 @@ orderbookCommand
     );
 
 orderbookCommand
-    .command("bids <outcomeId>")
+    .command("bids")
     .description("List bids for an outcome")
+    .requiredOption("--outcome <id>", "Outcome ID")
     .option("--first <n>", "Results per page", "10")
     .option("--page <n>", "Page number", "1")
     .option("--json", "Output raw JSON", false)
-    .action((outcomeId: string, opts) =>
+    .action((opts: { outcome: string; first: string; page: string; json?: boolean }) =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.bids(
-                parseInt(outcomeId, 10),
+                parseInt(opts.outcome, 10),
                 parseInt(opts.first, 10),
                 parseInt(opts.page, 10),
             );
@@ -90,16 +92,17 @@ orderbookCommand
     );
 
 orderbookCommand
-    .command("asks <outcomeId>")
+    .command("asks")
     .description("List asks for an outcome")
+    .requiredOption("--outcome <id>", "Outcome ID")
     .option("--first <n>", "Results per page", "10")
     .option("--page <n>", "Page number", "1")
     .option("--json", "Output raw JSON", false)
-    .action((outcomeId: string, opts) =>
+    .action((opts: { outcome: string; first: string; page: string; json?: boolean }) =>
         runAction(async () => {
             const client = await getClient();
             const result = await client.asks(
-                parseInt(outcomeId, 10),
+                parseInt(opts.outcome, 10),
                 parseInt(opts.first, 10),
                 parseInt(opts.page, 10),
             );
