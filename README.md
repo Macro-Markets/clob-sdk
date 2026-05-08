@@ -45,7 +45,7 @@ Create a `.env` file in the directory where you run the CLI, or export the varia
 
 ```env
 API_TOKEN=your-api-token-here
-ENDPOINT=https://api.macro.markets/graphql
+ENDPOINT=https://acp.macro.markets/graphql
 ```
 
 | Variable | Required | Description |
@@ -94,7 +94,7 @@ See **[CLI Usage](docs/CLI_USAGE.md)** for the full command reference.
 import { createGraphQLClient } from "@macro-markets/market-sdk";
 
 const client = createGraphQLClient(
-    "https://api.macro.markets/graphql",
+    "https://acp.macro.markets/graphql",
     "YOUR_API_TOKEN",
     "en", // optional locale, sent as Accept-Language
 );
