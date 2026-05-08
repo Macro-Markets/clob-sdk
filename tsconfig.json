@@ -1,10 +1,9 @@
 {
     "include": ["src/**/*", "examples/**/*", "tests/**/*"],
-    "exclude": [
-        "node_modules",
-    ],
+    "exclude": ["node_modules"],
     "compilerOptions": {
         "baseUrl": "./",
+        "jsx": "react-jsx",
         "module": "nodenext",
         "moduleResolution": "nodenext",
         "target": "es2022",
@@ -28,5 +27,5 @@
         "skipLibCheck": true,
         // Enforce `import type` for compatibility with Node.js TS support
         "verbatimModuleSyntax": true
-    },
+    }
 }
