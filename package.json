@@ -1,6 +1,6 @@
 {
     "name": "@macro-markets/market-sdk",
-    "description": "SDK and CLI for Macro Markets — browse prediction markets, manage orders, view portfolio",
+    "description": "Official TypeScript SDK and CLI for Macro Markets prediction markets, order books, trading, and portfolio automation",
     "version": "1.0.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
