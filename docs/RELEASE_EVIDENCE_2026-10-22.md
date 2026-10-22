@@ -32,7 +32,7 @@ as a measured coverage improvement.
 
 - `npm pack --dry-run` and `npm pack` completed. The allowlist contains built code,
   README, MIT license, package metadata and documentation; no `.env`, token, tests or
-  local configuration.
+  local configuration. This operational release-evidence file is not in the tarball.
 - Installed the resulting tarball in a fresh consumer directory with npm.
 - The installed `market-sdk --version` returned `1.0.0`.
 - The installed CLI returned valid JSON from `markets list --first 1 --json`, without
@@ -61,7 +61,9 @@ as a measured coverage improvement.
   Reauthorization was requested; the workflows were not removed to evade this gate.
 - RapidAPI login succeeded. Its initially blank embedded Studio loaded when opened
   directly. Private project `macro-markets-public-market-data` was created with the
-  homepage and English copy saved. Endpoint-form validation and gateway testing remain
+  homepage and English copy saved. After both imported response examples were filled
+  with the observed public API response, endpoint validation passed: rereading the
+  endpoints list confirmed `queryPublicMarketData` persisted. Gateway testing remains
   pending; a private project is not a public listing.
 - DM campaign `developer-ecosystem-en` (ID 2) tracks RapidAPI and npm separately as
   opportunities (placements 57 and 58), not submitted or verified backlinks.

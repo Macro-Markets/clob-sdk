@@ -15,7 +15,10 @@
     "type": "module",
     "files": [
         "/dist",
-        "/docs"
+        "/docs/CLI_USAGE.md",
+        "/docs/GRAPHQL_APOLLO_USAGE.md",
+        "/docs/PUBLISHING.md",
+        "/docs/rapidapi"
     ],
     "sideEffects": false,
     "keywords": [
