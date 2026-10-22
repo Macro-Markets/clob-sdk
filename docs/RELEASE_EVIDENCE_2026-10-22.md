@@ -63,8 +63,22 @@ as a measured coverage improvement.
   directly. Private project `macro-markets-public-market-data` was created with the
   homepage and English copy saved. After both imported response examples were filled
   with the observed public API response, endpoint validation passed: rereading the
-  endpoints list confirmed `queryPublicMarketData` persisted. Gateway testing remains
-  pending; a private project is not a public listing.
+  endpoints list confirmed `queryPublicMarketData` persisted.
+- Gateway test in the actual RapidAPI playground returned HTTP 200 (1039 ms shown),
+  five markets, ten English categories, and paginator total 209. The first run had
+  omitted the optional language header; editing it explicitly corrected the response.
+  The imported JSON/English headers were then marked required and saved. Reopening the
+  endpoint confirmed both required flags and their default values persisted. A fresh
+  provider `Test Endpoint` run with these saved defaults returned 200, total 209, an
+  English market title and `World Elections` in the response.
+- BASIC is $0 with a saved hard limit of 1,000 requests/month; PRO/ULTRA/MEGA remain
+  disabled. RapidAPI's separate bandwidth object showed $0.001/MB above 10,240 MB and
+  was not editable in the provider panel. Official consumer documentation confirms the
+  platform fee is charged to the consumer. A maintainer decision was requested before
+  public exposure under that condition. No payment details or paid plan were added.
+- Screenshot of the actual private gateway test is recorded in the DM working
+  artifacts as `developer-distribution-20261022/rapidapi-private-gateway-200.png`.
+  A private project and a passing gateway request are not verified public backlinks.
 - DM campaign `developer-ecosystem-en` (ID 2) tracks RapidAPI and npm separately as
   opportunities (placements 57 and 58), not submitted or verified backlinks.
 

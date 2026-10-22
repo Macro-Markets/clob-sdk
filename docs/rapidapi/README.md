@@ -37,9 +37,17 @@ terms and risk of loss. Do not describe trading as free of fees or risk.
 - The native API needs no `Authorization` header for these public queries. Do not add a
   required Macro token just because a generic listing tutorial does. RapidAPI's own
   gateway key is separate from any Macro account token.
+- Mark `Content-Type: application/json` and `Accept-Language: en` as required example
+  headers in the imported definition. An optional example value displayed by the
+  playground was not sent until edited; verify the actual response is in English.
 - If a free consumer plan is needed, set its price to $0 and use a hard request limit
   after checking the origin's rate limits/capacity. Do not invent an SLA or promise
   unlimited usage. Do not enter payment or payout details.
+- Check platform-imposed charges separately. In October 2026 the RapidAPI panel and
+  consumer documentation included a bandwidth platform fee above 10 GB per billing
+  cycle, charged to the consumer even when BASIC is $0. This is not a Macro usage fee;
+  do not promise unlimited or unconditionally free gateway traffic. Obtain the
+  maintainer's decision before publishing a listing under this condition.
 - Listing a restricted query schema is documentation, **not** a server-side authorization
   boundary. Preserve all origin authentication, eligibility and rate-limit protections.
   No write or financial smoke tests are part of this pilot.
@@ -62,3 +70,4 @@ Primary provider documentation:
 - https://docs.rapidapi.com/docs/add-api-getting-started
 - https://docs.rapidapi.com/docs/graphql-apis
 - https://docs.rapidapi.com/docs/configuring-api-security
+- https://docs.rapidapi.com/docs/connecting-to-an-api
