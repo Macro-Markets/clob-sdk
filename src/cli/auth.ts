@@ -15,3 +15,9 @@ export async function getClient(locale = "en"): Promise<GraphQLSdkClient> {
     const token = getEnvOrFail("API_TOKEN");
     return createGraphQLClient(endpoint, token, locale);
 }
+
+/** Public market data does not require a token. Private commands still use getClient. */
+export async function getPublicClient(locale = "en"): Promise<GraphQLSdkClient> {
+    const endpoint = getEnvOrFail("ENDPOINT");
+    return createGraphQLClient(endpoint, process.env["API_TOKEN"] ?? "", locale);
+}

@@ -1,0 +1,43 @@
+{
+    "info": {
+        "name": "Macro Markets Public Market Data",
+        "description": "Read-only GraphQL examples for the existing Macro Markets public API. No API_TOKEN, Authorization value, private account data or mutations are included. This file is not proof of marketplace publication.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "List public prediction markets",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" },
+                    { "key": "Accept-Language", "value": "en" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"query\":\"query PublicMarkets($first: Int!, $page: Int, $language: String!) { marketsPredictions(first: $first, page: $page, language: $language) { data { id title slug currency_code status } paginatorInfo { total currentPage } } }\",\"variables\":{\"first\":5,\"page\":1,\"language\":\"en\"}}",
+                    "options": { "raw": { "language": "json" } }
+                },
+                "url": "https://acp.macro.markets/@",
+                "description": "Public discovery query. No Macro account token is needed. Results and market availability change over time."
+            }
+        },
+        {
+            "name": "List public market categories",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" },
+                    { "key": "Accept-Language", "value": "en" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"query\":\"query PublicCategories($language: String) { marketPredictionCategories(first: 10, language: $language, enabled: true) { data { id name slug } } }\",\"variables\":{\"language\":\"en\"}}",
+                    "options": { "raw": { "language": "json" } }
+                },
+                "url": "https://acp.macro.markets/@",
+                "description": "Read-only category discovery. No Macro account token or financial action."
+            }
+        }
+    ]
+}

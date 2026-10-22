@@ -6,6 +6,7 @@ import { portfolioCommand } from "./commands/portfolio.ts";
 import { ordersCommand } from "./commands/orders.ts";
 import { activityCommand, tradesCommand } from "./commands/activity.ts";
 import { startRepl } from "./repl.ts";
+import { outputStore, isTableOutputItem } from "./store/OutputStore.ts";
 
 const program = new Command();
 
@@ -29,5 +30,19 @@ const userArgs = argv.slice(2);
 if (userArgs.length === 0) {
     startRepl(program);
 } else {
-    program.parse(argv);
+    // Non-interactive commands have no Ink renderer: flush each output block to stdout.
+    const unsubscribe = outputStore.subscribe(() => {
+        const item = outputStore.getItems().at(-1);
+        if (!item) return;
+        if (isTableOutputItem(item)) {
+            console.table(item.rows, item.columns);
+        } else {
+            process.stdout.write(`${item.text}\n`);
+        }
+    });
+    try {
+        await program.parseAsync(argv);
+    } finally {
+        unsubscribe();
+    }
 }

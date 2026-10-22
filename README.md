@@ -2,6 +2,8 @@
 
 Official TypeScript SDK and command-line interface for **Macro Markets** prediction markets.
 
+[Macro Markets](https://macro.markets/en) · [Source and issues](https://github.com/Macro-Markets/clob-sdk)
+
 Use it to discover markets, inspect order books, preview and place CLOB/AMM orders, manage your portfolio, and read activity/trade history from scripts, apps, or the terminal.
 
 ## What is included
@@ -44,8 +46,9 @@ npm install @macro-markets/market-sdk
 Create a `.env` file in the directory where you run the CLI, or export the variables in your shell:
 
 ```env
-API_TOKEN=your-api-token-here
-ENDPOINT=https://acp.macro.markets/graphql
+ENDPOINT=https://acp.macro.markets/@
+# Set API_TOKEN only when using authenticated commands.
+# API_TOKEN=your-api-token-here
 ```
 
 | Variable | Required | Description |
@@ -94,26 +97,18 @@ See **[CLI Usage](docs/CLI_USAGE.md)** for the full command reference.
 import { createGraphQLClient } from "@macro-markets/market-sdk";
 
 const client = createGraphQLClient(
-    "https://acp.macro.markets/graphql",
-    "YOUR_API_TOKEN",
+    "https://acp.macro.markets/@",
+    "", // public market data needs no token
     "en", // optional locale, sent as Accept-Language
 );
 
 const markets = await client.markets({ first: 20, page: 1, language: "en" });
 const market = await client.marketBySlug("market-slug");
 const book = await client.orderBook(123);
-
-const preview = await client.previewOrder({
-    operation: "BUY",
-    outcome_id: 123,
-    amount: 100,
-    limit_price: 0.54,
-});
-
-if (!preview?.errors?.length) {
-    await client.buy({ amount: 100, outcome_id: 123, limit_price: 0.54 });
-}
 ```
+
+Replace illustrative slugs and outcome IDs with values from a real market before use.
+Authenticated trading examples are documented separately; they can place real orders.
 
 See **[GraphQL / Apollo Usage](docs/GRAPHQL_APOLLO_USAGE.md)** for every supported SDK method and the GraphQL operations behind them.
 
@@ -146,11 +141,24 @@ pnpm run cli -- markets list --first 5
 pnpm test
 ```
 
-Publish flow:
+Publish flow (from a configured CI publisher):
 
 ```bash
-pnpm deploy
+pnpm run deploy
 ```
+
+See [Publishing](docs/PUBLISHING.md) for release checks and the first-publication setup.
+
+## Access and safety
+
+Public market and order-book queries do not require an API token. Portfolio, orders,
+activity and trades require your own personal token; never share it in issues, examples
+or marketplace listings. The server continues to enforce authentication and eligibility.
+
+Macro Markets is free to access. Buying and selling positions requires deposited funds
+and is subject to the platform's terms and eligibility requirements. Trading involves
+risk of loss; market prices are not guarantees. Quick-start examples that place or
+cancel orders perform real actions when used with a live endpoint and a valid token.
 
 ## License
 
