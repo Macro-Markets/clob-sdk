@@ -42,7 +42,10 @@ as a measured coverage improvement.
 - Built SDK calls to markets, market details, categories and an actual outcome's
   order book succeeded without a token. No order was placed or cancelled.
 - Both requests in the RapidAPI Postman collection returned HTTP 200 with no GraphQL
-  errors. JSON bodies and GraphQL syntax were validated.
+  errors before import. JSON bodies and GraphQL syntax were validated. The RapidAPI
+  importer then merged the same-method/path examples inconsistently; the collection
+  was consolidated into one actual GraphQL POST with both public reads. The combined
+  request returned HTTP 200, no GraphQL errors, five markets and ten categories.
 
 ## External publication gates — not yet completed
 
@@ -53,8 +56,13 @@ as a measured coverage improvement.
   maintainer's decision; do not silently rename the package or bypass authentication.
 - A GitHub release must use a checked commit and the configured npm publisher. No
   release, tag or package publication is claimed by these local tests.
-- RapidAPI login succeeded, but the Studio initially rendered an empty embedded app.
-  The collection and listing text are prepared, not evidence of a public listing.
+- Pushing the readiness branch was refused because the current GitHub OAuth token
+  lacks the `workflow` scope needed to enable tests in the two existing workflows.
+  Reauthorization was requested; the workflows were not removed to evade this gate.
+- RapidAPI login succeeded. Its initially blank embedded Studio loaded when opened
+  directly. Private project `macro-markets-public-market-data` was created with the
+  homepage and English copy saved. Endpoint-form validation and gateway testing remain
+  pending; a private project is not a public listing.
 - DM campaign `developer-ecosystem-en` (ID 2) tracks RapidAPI and npm separately as
   opportunities (placements 57 and 58), not submitted or verified backlinks.
 

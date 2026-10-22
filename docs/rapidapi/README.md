@@ -31,7 +31,9 @@ terms and risk of loss. Do not describe trading as free of fees or risk.
   the listing. Do not purchase a plan or enable paid overages.
 - RapidAPI supports GraphQL and Postman collections. The supplied collection contains
   actual POST requests to the GraphQL endpoint, not invented REST routes. Start with
-  these read-only examples; do not import the whole platform/admin schema.
+  the combined read-only example; do not import the whole platform/admin schema.
+  GraphQL uses a single `POST /@` route: separate Postman items with the same method
+  and path can overwrite each other's definitions in the RapidAPI importer.
 - The native API needs no `Authorization` header for these public queries. Do not add a
   required Macro token just because a generic listing tutorial does. RapidAPI's own
   gateway key is separate from any Macro account token.
