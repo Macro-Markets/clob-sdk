@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../auth.ts";
+import { getPublicClient } from "../auth.ts";
 import { output, printJson, printText, runAction } from "../format.ts";
 
 export const orderbookCommand = new Command("orderbook").description(
@@ -13,7 +13,7 @@ orderbookCommand
     .option("--json", "Output raw JSON", false)
     .action((opts: { outcome: string; json?: boolean }) =>
         runAction(async () => {
-            const client = await getClient();
+            const client = await getPublicClient();
             const result = await client.orderBook(parseInt(opts.outcome, 10));
 
             if (opts.json) {
@@ -63,7 +63,7 @@ orderbookCommand
     .option("--json", "Output raw JSON", false)
     .action((opts: { outcome: string; first: string; page: string; json?: boolean }) =>
         runAction(async () => {
-            const client = await getClient();
+            const client = await getPublicClient();
             const result = await client.bids(
                 parseInt(opts.outcome, 10),
                 parseInt(opts.first, 10),
@@ -100,7 +100,7 @@ orderbookCommand
     .option("--json", "Output raw JSON", false)
     .action((opts: { outcome: string; first: string; page: string; json?: boolean }) =>
         runAction(async () => {
-            const client = await getClient();
+            const client = await getPublicClient();
             const result = await client.asks(
                 parseInt(opts.outcome, 10),
                 parseInt(opts.first, 10),

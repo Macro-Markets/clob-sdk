@@ -1,16 +1,31 @@
 {
-    "name": "@macro-markets/market-sdk",
+    "name": "@macromarkets/market-sdk",
     "description": "Official TypeScript SDK and CLI for Macro Markets prediction markets, order books, trading, and portfolio automation",
     "version": "1.0.0",
+    "homepage": "https://macro.markets/en",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Macro-Markets/clob-sdk.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Macro-Markets/clob-sdk/issues"
+    },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "type": "module",
     "files": [
-        "/dist"
+        "/dist",
+        "/docs/CLI_USAGE.md",
+        "/docs/GRAPHQL_APOLLO_USAGE.md",
+        "/docs/PUBLISHING.md",
+        "/docs/rapidapi"
     ],
     "sideEffects": false,
     "keywords": [
         "prediction-markets",
+        "macro-markets",
+        "order-book",
+        "trading-api",
         "market-sdk",
         "graphql",
         "cli"
@@ -19,6 +34,10 @@
         "node": ">=20.10"
     },
     "license": "MIT",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
     "packageManager": "pnpm@9.15.4",
     "bin": {
         "market-sdk": "./dist/cli/index.js"
@@ -27,6 +46,7 @@
         "build": "make build",
         "lint": "make lint",
         "deploy": "pnpm build && npm publish --access public --provenance",
+        "prepublishOnly": "pnpm lint && pnpm test && pnpm build",
         "test": "make test",
         "cli": "node --import tsx/esm src/cli/index.ts",
         "market-sdk": "node --import tsx/esm src/cli/index.ts"

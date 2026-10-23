@@ -1,0 +1,26 @@
+{
+    "info": {
+        "name": "Macro Markets Public Market Data",
+        "description": "Read-only GraphQL examples for the existing Macro Markets public API. No API_TOKEN, Authorization value, private account data or mutations are included. This file is not proof of marketplace publication.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Query public markets and categories",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" },
+                    { "key": "Accept-Language", "value": "en" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"query\":\"query PublicMarketData { marketsPredictions(first: 5, page: 1, language: \\\"en\\\") { data { id title slug currency_code status } paginatorInfo { total currentPage } } marketPredictionCategories(first: 10, language: \\\"en\\\", enabled: true) { data { id name slug } } }\"}",
+                    "options": { "raw": { "language": "json" } }
+                },
+                "url": "https://acp.macro.markets/@",
+                "description": "One actual GraphQL POST endpoint returning public markets and categories. Combining these reads prevents importers from overwriting separate examples with the same method/path. No Macro account token or financial action. Results and market availability change over time."
+            }
+        }
+    ]
+}

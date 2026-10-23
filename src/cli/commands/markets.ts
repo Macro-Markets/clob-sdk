@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getClient } from "../auth.ts";
+import { getPublicClient } from "../auth.ts";
 import { output, printJson, printText, runAction } from "../format.ts";
 
 export const marketsCommand = new Command("markets").description("Browse prediction markets");
@@ -15,7 +15,7 @@ marketsCommand
     .option("--json", "Output raw JSON", false)
     .action(opts =>
         runAction(async () => {
-            const client = await getClient(opts.language);
+            const client = await getPublicClient(opts.language);
             const result = await client.markets({
                 first: parseInt(opts.first, 10),
                 page: parseInt(opts.page, 10),
@@ -58,7 +58,7 @@ marketsCommand
     .option("--json", "Output raw JSON", false)
     .action((slug: string, opts) =>
         runAction(async () => {
-            const client = await getClient(opts.language);
+            const client = await getPublicClient(opts.language);
             const result = await client.marketBySlug(slug);
             if (opts.json) {
                 printJson(result);
@@ -85,7 +85,7 @@ marketsCommand
     .option("--json", "Output raw JSON", false)
     .action(opts =>
         runAction(async () => {
-            const client = await getClient(opts.language);
+            const client = await getPublicClient(opts.language);
             const result = await client.categories({ language: opts.language });
 
             if (opts.json) {
@@ -117,7 +117,7 @@ marketsCommand
     .option("--json", "Output raw JSON", false)
     .action((slug: string, opts) =>
         runAction(async () => {
-            const client = await getClient(opts.language);
+            const client = await getPublicClient(opts.language);
             const result = await client.marketHistory({ slug, period: opts.period });
             if (opts.json) {
                 printJson(result);

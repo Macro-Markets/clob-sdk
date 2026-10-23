@@ -19,7 +19,7 @@ pnpm run cli
 ```bash
 market-sdk
 # or
-npx @macro-markets/market-sdk
+npx @macromarkets/market-sdk
 ```
 
 With no arguments, the CLI starts an interactive REPL. To run a single command:
@@ -29,7 +29,10 @@ market-sdk markets list
 market-sdk portfolio positions
 ```
 
-**Environment:** Set `ENDPOINT` and `API_TOKEN` in a `.env` file or export them. Commands that need auth (portfolio, orders, activity, trades) require a valid `API_TOKEN`.
+**Environment:** Set `ENDPOINT=https://acp.macro.markets/@` in a `.env` file or export it.
+Public `markets` and `orderbook` commands work without `API_TOKEN`. Commands that need
+auth (portfolio, orders, activity, trades) require your own valid `API_TOKEN`.
+Never put a token in a public command example, issue or marketplace listing.
 
 **Language:** All commands that support `--language <lang>` send the value **only via the `Accept-Language` HTTP header**. The backend uses this header for locale (e.g. `markets list`, `markets get`, `markets categories`, `markets history`). Do not rely on passing language as a query variable; the header is the single source of truth.
 
