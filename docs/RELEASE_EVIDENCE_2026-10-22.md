@@ -1,5 +1,40 @@
 # Developer distribution readiness — 2026-10-22
 
+## Maintainer decisions and latest state
+
+On 2026-10-22 (America/Sao_Paulo), the maintainer selected the personal npm scope
+`@macromarkets`, authorized the GitHub CLI `workflow` permission refresh, and confirmed
+the free API pilot. The package and all current usage instructions now use
+`@macromarkets/market-sdk`; historical checks of the former scope below are retained.
+
+Lint (exit 0, same two existing warnings), all 47 tests, build and TypeScript checks
+passed again after renaming. A newly packed `@macromarkets/market-sdk@1.0.0` tarball
+was installed into a fresh consumer. Both the installed CLI and the installed SDK import
+queried real public markets without a token (one market, total 208 at that time).
+The new scoped package registry lookup returned 404 before publication. No npm package,
+GitHub PR, release, tag or CI approval is claimed yet: the official GitHub device flow
+and npm email confirmation still require completion in Chrome.
+
+The RapidAPI BASIC pilot is now public:
+https://rapidapi.com/MacroMarkets/api/macro-markets-public-market-data . Its saved plan
+is $0/month with a 1,000-request monthly hard cap, with paid tiers disabled and the
+separate platform bandwidth fee disclosed. Saved English quickstart JSON was parsed
+successfully. A separate Chrome Incognito window showed `Sign In` / `Sign Up` and the
+public listing, documentation, logo and plan without authenticating. The anonymous
+rendered DOM contained three direct `https://macro.markets/en` anchors, all with empty
+`rel`: URL text, `Macro Markets`, and `Product Website` (the latter opens `_blank`).
+
+Anonymous HTTP returned 200 but only the client-rendered shell. DM's automatic HTTP
+verifier therefore reported `not_found`; this is kept distinct from the rendered
+browser evidence, not overridden to mark an automatic pass. Placement 57 is
+`live_unverified`, with the public source URL and notes documenting the manual proof.
+The campaign was activated as a registry state change only, without outreach.
+
+Proof: `artifacts/developer-distribution-20261022/rapidapi-public-anonymous.png` in the
+DM backlink working tree. No indexation, DR, referral traffic or SEO gain is asserted.
+
+## Historical readiness checks (before the decisions above)
+
 ## Scope and boundaries
 
 Official repository: https://github.com/Macro-Markets/clob-sdk

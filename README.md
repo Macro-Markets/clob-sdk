@@ -1,4 +1,4 @@
-# @macro-markets/market-sdk
+# @macromarkets/market-sdk
 
 Official TypeScript SDK and command-line interface for **Macro Markets** prediction markets.
 
@@ -24,7 +24,7 @@ Use it to discover markets, inspect order books, preview and place CLOB/AMM orde
 ### CLI globally
 
 ```bash
-npm install -g @macro-markets/market-sdk
+npm install -g @macromarkets/market-sdk
 ```
 
 Then run:
@@ -38,7 +38,7 @@ market-sdk portfolio positions
 ### Library in your project
 
 ```bash
-npm install @macro-markets/market-sdk
+npm install @macromarkets/market-sdk
 ```
 
 ## Configuration
@@ -94,7 +94,7 @@ See **[CLI Usage](docs/CLI_USAGE.md)** for the full command reference.
 ## SDK quick start
 
 ```ts
-import { createGraphQLClient } from "@macro-markets/market-sdk";
+import { createGraphQLClient } from "@macromarkets/market-sdk";
 
 const client = createGraphQLClient(
     "https://acp.macro.markets/@",

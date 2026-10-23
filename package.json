@@ -1,5 +1,5 @@
 {
-    "name": "@macro-markets/market-sdk",
+    "name": "@macromarkets/market-sdk",
     "description": "Official TypeScript SDK and CLI for Macro Markets prediction markets, order books, trading, and portfolio automation",
     "version": "1.0.0",
     "homepage": "https://macro.markets/en",

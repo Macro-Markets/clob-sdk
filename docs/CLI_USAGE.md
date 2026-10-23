@@ -19,7 +19,7 @@ pnpm run cli
 ```bash
 market-sdk
 # or
-npx @macro-markets/market-sdk
+npx @macromarkets/market-sdk
 ```
 
 With no arguments, the CLI starts an interactive REPL. To run a single command:

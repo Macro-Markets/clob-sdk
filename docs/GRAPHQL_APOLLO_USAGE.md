@@ -3,7 +3,7 @@
 ## Initialize
 
 ```ts
-import { createGraphQLClient } from "@macro-markets/market-sdk";
+import { createGraphQLClient } from "@macromarkets/market-sdk";
 
 const client = createGraphQLClient(
     "https://acp.macro.markets/@",

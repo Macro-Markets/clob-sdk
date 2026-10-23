@@ -1,6 +1,9 @@
 # RapidAPI listing draft: Macro Markets Public Market Data
 
-Status: preparation only. This directory is not proof of a published RapidAPI listing.
+Status: the BASIC pilot was published on 2026-10-22 (America/Sao_Paulo) at
+https://rapidapi.com/MacroMarkets/api/macro-markets-public-market-data . Anonymous
+Chrome verification confirmed the public listing and three direct homepage anchors
+with empty `rel` values. This is not proof of indexing or ranking gains.
 
 ## Listing copy (English)
 
@@ -24,6 +27,10 @@ guarantees of an outcome.
 **Access:** Free access to the documented public data. Trading on Macro Markets is a
 separate authenticated activity requiring deposited funds and is subject to eligibility,
 terms and risk of loss. Do not describe trading as free of fees or risk.
+
+**Pilot plan:** BASIC $0/month, 1,000 requests/month with a hard cap; no Macro paid
+tier or request overages. RapidAPI's separate bandwidth platform fee above 10 GB is
+disclosed in the public overview and quickstart, not described as a Macro fee.
 
 ## Provider setup
 

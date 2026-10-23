@@ -1,6 +1,6 @@
 # Publishing the SDK and CLI
 
-The single package `@macro-markets/market-sdk` includes the library and the `market-sdk`
+The single package `@macromarkets/market-sdk` includes the library and the `market-sdk`
 CLI. Do not publish a duplicate package just for distribution links.
 
 ## Release checks
@@ -15,7 +15,7 @@ CLI. Do not publish a duplicate package just for distribution links.
 4. Use only read-only queries against the live API. Never use a live order, cancellation,
    deposit or withdrawal as a release smoke test.
 5. Confirm the exact package/version is absent before the first publish. Use an account
-   permitted to publish under the `@macro-markets` scope. Do not bypass 2FA or move an
+   permitted to publish under the `@macromarkets` scope. Do not bypass 2FA or move an
    existing published version.
 
 ## First publication and subsequent releases
